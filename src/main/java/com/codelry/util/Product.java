@@ -1,17 +1,17 @@
 package com.codelry.util;
 
-class Product {
-  String name;
-  int category;
-  int subcategory;
+public class Product {
+  public String name;
+  public int category;
+  public int subcategory;
 
-  Product(String name, int category, int subcategory) {
+  public Product(String name, int category, int subcategory) {
     this.name = name;
     this.category = category;
     this.subcategory = subcategory;
   }
 
-  private String getCategoryName(int category) {
+  public String getCategoryName() {
     switch (category) {
       case 1: return "Electronics";
       case 2: return "Household Items";
@@ -21,7 +21,7 @@ class Product {
     }
   }
 
-  private String getSubcategoryName(int subcategory) {
+  public String getSubcategoryName() {
     switch (subcategory) {
       case 101: return "Mobile Devices";
       case 102: return "Computers";

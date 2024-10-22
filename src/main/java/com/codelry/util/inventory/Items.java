@@ -1,67 +1,46 @@
 package com.codelry.util.inventory;
 
+import com.codelry.util.Product;
+import com.codelry.util.Table;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.codelry.util.RandomData;
+import com.codelry.util.ProductList;
 
-public class Items {
-  private final ObjectNode data;
+import java.util.List;
 
-  public Items(int i_id) {
+public class Items extends Table {
+
+  @Override
+  public void init(long i_id) {
     RandomData util = new RandomData();
+    ProductList products = new ProductList();
+    this.recordName = "item";
+    this.recordNumber = i_id;
+
+    int count = products.productCount();
+    int selection = util.randomNumber(0, count - 1);
+    Product product = products.getProductByIndex(selection);
+    List<String> brands = products.getProductBrands(selection);
+    String brand = brands.get(util.randomNumber(0, brands.size() - 1));
+
     int i_store_id = util.randomNumber(1, 10000);
-    String i_name = util.makeAlphaString(14, 24);
-    float i_price = (float) (util.randomNumber(100, 10000) / 100.0);
-    String i_data = util.makeAlphaString(26, 50);
-    String i_brand = "";
-    String i_category = "";
-    int i_category_key = 0;
-    String i_subcategory = "";
-    int i_subcategory_key = 0;
-    double i_cost = 1.00;
 
-    int position = util.randomNumber(0, i_data.length() - 8);
-    i_data = i_data.substring(0, position) + "original" + i_data.substring(position + 8);
+    String i_name = brand + " " + product.name;
+    double i_price = util.randomDouble(10, 2000, 2);
+    int rand_percentage = util.randomNumber(70, 90);
+    float percentage = (float) rand_percentage / 100;
+    double i_cost = util.roundDouble(i_price * percentage, 2);
 
-    ObjectMapper mapper = new ObjectMapper();
-    this.data = mapper.createObjectNode();
     this.data.put("i_id", i_id);
     this.data.put("i_store_id", i_store_id);
     this.data.put("i_name", i_name);
-    this.data.put("i_brand", i_brand);
+    this.data.put("i_brand", brand);
     this.data.put("i_price", i_price);
     this.data.put("i_cost", i_cost);
-    this.data.put("i_category", i_category);
-    this.data.put("i_category_key", i_category_key);
-    this.data.put("i_subcategory", i_subcategory);
-    this.data.put("i_subcategory_key", i_subcategory_key);
-  }
-
-  public int i_id() {
-    return data.get("i_id").asInt();
-  }
-
-  public int i_im_id() {
-    return data.get("i_im_id").asInt();
-  }
-
-  public String i_name() {
-    return data.get("i_name").asText();
-  }
-
-  public float i_price() {
-    return data.get("i_price").floatValue();
-  }
-
-  public String i_data() {
-    return data.get("i_data").asText();
-  }
-
-  public ObjectNode asNode() {
-    return data;
-  }
-
-  public String asJson() {
-    return data.toString();
+    this.data.put("i_category", product.getCategoryName());
+    this.data.put("i_category_key", product.category);
+    this.data.put("i_subcategory", product.getSubcategoryName());
+    this.data.put("i_subcategory_key", product.subcategory);
   }
 }
