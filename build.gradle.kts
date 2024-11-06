@@ -20,12 +20,15 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter")
     implementation("org.apache.logging.log4j:log4j-core:2.24.0")
     implementation("org.apache.logging.log4j:log4j-api:2.24.0")
-    implementation("org.apache.logging.log4j:log4j-slf4j-impl:2.24.0")
+    implementation("org.apache.logging.log4j:log4j-slf4j2-impl:2.24.0")
     implementation("com.fasterxml.jackson.core:jackson-core:2.17.2")
     implementation("com.fasterxml.jackson.core:jackson-databind:2.17.2")
     implementation("org.apache.commons:commons-configuration2:2.11.0")
     implementation("com.couchbase.client:java-client:3.7.2")
     implementation("com.codelry.util:couchbase-connect-sdk3:1.0.0")
+    implementation("com.hubspot.jinjava:jinjava:2.7.3")
+    implementation("dev.langchain4j:langchain4j:0.35.0")
+    implementation("dev.langchain4j:langchain4j-open-ai:0.35.0")
 }
 
 java {

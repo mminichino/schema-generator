@@ -1,0 +1,6 @@
+{
+    "id": "{{ DOCUMENT_ID }}",
+    "index": "{{ INDEX }}",
+    "firstName": "{{ FIRST_NAME }}",
+    "lastName": "{{ LAST_NAME }}"
+}
