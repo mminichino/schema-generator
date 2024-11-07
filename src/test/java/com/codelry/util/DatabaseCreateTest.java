@@ -12,7 +12,6 @@ public class DatabaseCreateTest {
   public void testDatabaseCreation() {
     LOGGER.info("Starting test");
     CreateDatabase db = new CreateDatabase();
-
     db.init();
   }
 }

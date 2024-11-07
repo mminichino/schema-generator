@@ -30,7 +30,7 @@ dependencies {
     implementation("dev.langchain4j:langchain4j:0.35.0")
     implementation("dev.langchain4j:langchain4j-open-ai:0.35.0")
     implementation("commons-cli:commons-cli:1.9.0")
-    implementation("com.couchbase.lite:couchbase-lite-java:3.2.0")
+    implementation("org.xerial:sqlite-jdbc:3.47.0.0")
 }
 
 java {

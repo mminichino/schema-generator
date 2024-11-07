@@ -1,28 +1,31 @@
 package com.codelry.util.internal;
 
-import com.couchbase.lite.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import java.util.Objects;
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.sql.Statement;
 
 public class CreateDatabase {
   private static final Logger LOGGER = LogManager.getLogger(CreateDatabase.class);
-  public static Database database;
-  public static Collection collection;
+  private static final String NAMES_TABLE = "CREATE TABLE IF NOT EXISTS users " +
+                                            "(id INTEGER PRIMARY KEY, " +
+                                            "first TEXT, " +
+                                            "last TEXT, " +
+                                            "gender TEXT)";
 
   public CreateDatabase() {}
 
   public void init() {
-    String dbPath = "src/main/resources/data";
+    String url = "jdbc:sqlite:src/main/resources/data/source.db";
 
     LOGGER.info("Initializing database");
-    CouchbaseLite.init();
-    Database.log.getConsole().setLevel(LogLevel.ERROR);
-    DatabaseConfiguration config = new DatabaseConfiguration();
-    config.setDirectory(dbPath);
-    try {
-      database = new Database("source", config);
-    } catch (CouchbaseLiteException e) {
+    try (Connection conn = DriverManager.getConnection(url)) {
+      Statement stmt = conn.createStatement();
+      stmt.execute(NAMES_TABLE);
+    } catch (SQLException e) {
       throw new RuntimeException(e);
     }
   }
