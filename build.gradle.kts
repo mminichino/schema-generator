@@ -29,6 +29,8 @@ dependencies {
     implementation("com.hubspot.jinjava:jinjava:2.7.3")
     implementation("dev.langchain4j:langchain4j:0.35.0")
     implementation("dev.langchain4j:langchain4j-open-ai:0.35.0")
+    implementation("commons-cli:commons-cli:1.9.0")
+    implementation("com.couchbase.lite:couchbase-lite-java:3.2.0")
 }
 
 java {
@@ -45,6 +47,10 @@ tasks.compileJava {
 
 tasks.test {
     useJUnitPlatform()
+}
+
+tasks.withType<Test> {
+    jvmArgs = listOf("--add-opens", "java.base/java.lang.invoke=ALL-UNNAMED")
 }
 
 tasks.register("pushToGithub") {
