@@ -10,7 +10,7 @@ public class ProgressOutput {
   }
 
   public void init() {
-    System.out.printf("Progress: 0 of %d - 0%% Errors: 0\r", total);
+    System.out.printf("Progress: 0 of %d - 0%%\r", total);
     System.out.flush();
   }
 
