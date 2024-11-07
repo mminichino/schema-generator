@@ -11,7 +11,11 @@ public class DatabaseCreateTest {
   @Test
   public void testDatabaseCreation() {
     LOGGER.info("Starting test");
-    CreateDatabase db = new CreateDatabase();
-    db.init();
+    runMain();
+  }
+
+  public static void runMain() {
+    String [] args = new String[0];
+    CreateDatabase.main(args);
   }
 }

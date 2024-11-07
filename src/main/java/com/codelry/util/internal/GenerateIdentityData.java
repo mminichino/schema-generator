@@ -1,5 +1,6 @@
 package com.codelry.util.internal;
 
+import com.codelry.util.util.ProgressOutput;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -77,16 +78,20 @@ public class GenerateIdentityData {
           .chatMemory(chatMemory)
           .build();
 
+      ProgressOutput progress = new ProgressOutput(total);
+      progress.init();
       while (nameList.size() < total) {
-        String answer = assistant.chat(prompt.toUserMessage().toString());
         try {
+          String answer = assistant.chat(prompt.toUserMessage().toString());
           List<JsonNode> batch = mapper.readValue(answer, typeFactory.constructCollectionType(List.class, JsonNode.class));
-          LOGGER.info("Generated {} name records", batch.size());
+          progress.writeLine(batch.size());
           nameList.addAll(batch);
-        } catch (JsonProcessingException e) {
-          LOGGER.warn("Error in generated name JSON");
+        } catch (Exception e) {
+          progress.incrementErrorCount();
+          LOGGER.debug(e.getMessage(), e);
         }
       }
+      progress.newLine();
       return new ArrayList<>(nameList.subList(0, total));
     }
   }
@@ -127,16 +132,20 @@ public class GenerateIdentityData {
           .chatMemory(chatMemory)
           .build();
 
+      ProgressOutput progress = new ProgressOutput(total);
+      progress.init();
       while (addressList.size() < total) {
-        String answer = assistant.chat(prompt.toUserMessage().toString());
         try {
+          String answer = assistant.chat(prompt.toUserMessage().toString());
           List<JsonNode> batch = mapper.readValue(answer, typeFactory.constructCollectionType(List.class, JsonNode.class));
-          LOGGER.info("Generated {} address records", batch.size());
+          progress.writeLine(batch.size());
           addressList.addAll(batch);
-        } catch (JsonProcessingException e) {
-          LOGGER.warn("Error in generated address JSON");
+        } catch (Exception e) {
+          progress.incrementErrorCount();
+          LOGGER.debug(e.getMessage(), e);
         }
       }
+      progress.newLine();
       return new ArrayList<>(addressList.subList(0, total));
     }
   }
