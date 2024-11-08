@@ -31,6 +31,7 @@ dependencies {
     implementation("dev.langchain4j:langchain4j-open-ai:0.35.0")
     implementation("commons-cli:commons-cli:1.9.0")
     implementation("org.xerial:sqlite-jdbc:3.47.0.0")
+    implementation("org.apache.commons:commons-csv:1.12.0")
 }
 
 java {

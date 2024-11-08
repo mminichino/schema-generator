@@ -1,11 +1,16 @@
 package com.codelry.util.internal;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVParser;
+import org.apache.commons.csv.CSVRecord;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.commons.cli.*;
 
+import java.io.FileReader;
 import java.io.IOException;
+import java.io.Reader;
 import java.sql.*;
 import java.util.List;
 
@@ -38,7 +43,7 @@ public class CreateDatabase {
 
     Option nameOpt = new Option("n", "names", false, "Names");
     Option addressOpt = new Option("a", "address", false, "Addresses");
-    Option phoneOpt = new Option("p", "phone", false, "Phones");
+    Option phoneOpt = new Option("p", "phone", true, "Phones");
 
     nameOpt.setRequired(false);
     addressOpt.setRequired(false);
@@ -73,11 +78,13 @@ public class CreateDatabase {
       populateNamesTable(10_000);
     } else if (cmd.hasOption("address")) {
       populateAddressTable(10_000);
+    } else if (cmd.hasOption("phone")) {
+      populatePhoneTable(cmd.getOptionValue("phone"));
     }
   }
 
   public static void populateNamesTable(int records) {
-    int batch = 100;
+    int batch = 50;
     int count = (int) (Math.ceil((double) records / batch)) * batch;
     int iterations = count / batch;
 
@@ -102,7 +109,7 @@ public class CreateDatabase {
   }
 
   public static void populateAddressTable(int records) {
-    int batch = 100;
+    int batch = 50;
     int count = (int) (Math.ceil((double) records / batch)) * batch;
     int iterations = count / batch;
 
@@ -124,6 +131,26 @@ public class CreateDatabase {
         stmt.executeUpdate();
       }
     } catch (SQLException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  public static void populatePhoneTable(String filename) {
+    LOGGER.info("Inserting phone data into the database");
+    try {
+      try (Reader reader = new FileReader(filename); CSVParser parser = new CSVParser(reader, CSVFormat.DEFAULT)) {
+        try (Connection conn = DriverManager.getConnection(url)) {
+          for (CSVRecord record : parser) {
+            String sql = "INSERT INTO areacodes(code,prefix,state) VALUES(?,?,?)";
+            PreparedStatement stmt = conn.prepareStatement(sql);
+            stmt.setString(1, record.get(0));
+            stmt.setString(2, record.get(1));
+            stmt.setString(3, record.get(2));
+            stmt.executeUpdate();
+          }
+        }
+      }
+    } catch (IOException | SQLException e) {
       throw new RuntimeException(e);
     }
   }
