@@ -1,4 +1,4 @@
-package com.codelry.util.internal;
+package com.codelry.util.datagen.internal;
 
 import static dev.langchain4j.internal.Utils.getOrDefault;
 

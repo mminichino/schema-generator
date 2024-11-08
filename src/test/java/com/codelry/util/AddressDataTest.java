@@ -1,6 +1,6 @@
 package com.codelry.util;
 
-import com.codelry.util.internal.GenerateIdentityData;
+import com.codelry.util.datagen.internal.GenerateIdentityData;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.junit.jupiter.api.Test;
 import org.apache.logging.log4j.LogManager;

@@ -1,4 +1,4 @@
-package com.codelry.util.internal;
+package com.codelry.util.datagen.internal;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import org.apache.commons.csv.CSVFormat;

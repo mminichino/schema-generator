@@ -1,4 +1,4 @@
-package com.codelry.util.generator;
+package com.codelry.util.datagen.generator;
 
 public class DocumentId {
   public static String documentId() {

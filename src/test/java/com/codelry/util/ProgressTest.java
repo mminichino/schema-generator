@@ -1,7 +1,6 @@
 package com.codelry.util;
 
-import com.codelry.util.util.ProgressOutput;
-import org.junit.jupiter.api.Test;
+import com.codelry.util.datagen.util.ProgressOutput;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 

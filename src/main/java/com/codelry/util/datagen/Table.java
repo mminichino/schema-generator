@@ -1,4 +1,4 @@
-package com.codelry.util;
+package com.codelry.util.datagen;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.ObjectMapper;

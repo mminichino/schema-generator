@@ -1,4 +1,4 @@
-package com.codelry.util;
+package com.codelry.util.datagen;
 
 import java.time.Duration;
 import java.util.List;

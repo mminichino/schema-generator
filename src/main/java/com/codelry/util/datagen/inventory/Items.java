@@ -1,11 +1,9 @@
-package com.codelry.util.inventory;
+package com.codelry.util.datagen.inventory;
 
-import com.codelry.util.Product;
-import com.codelry.util.Table;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.codelry.util.RandomData;
-import com.codelry.util.ProductList;
+import com.codelry.util.datagen.Product;
+import com.codelry.util.datagen.Table;
+import com.codelry.util.datagen.RandomData;
+import com.codelry.util.datagen.ProductList;
 
 import java.util.List;
 

@@ -1,4 +1,4 @@
-package com.codelry.util.util;
+package com.codelry.util.datagen.util;
 
 public enum Color {
 

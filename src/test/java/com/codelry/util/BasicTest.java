@@ -1,6 +1,6 @@
 package com.codelry.util;
 
-import com.codelry.util.generator.Generator;
+import com.codelry.util.datagen.generator.Generator;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.params.ParameterizedTest;
