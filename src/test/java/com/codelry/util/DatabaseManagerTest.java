@@ -1,16 +1,10 @@
 package com.codelry.util;
 
-import com.codelry.util.datagen.db.DatabaseManager;
-import com.codelry.util.datagen.db.NameRecord;
-import com.codelry.util.datagen.db.RecordNotFound;
+import com.codelry.util.datagen.db.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.Test;
-
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.util.List;
 
 public class DatabaseManagerTest {
   private static final Logger LOGGER = LogManager.getLogger(DatabaseManagerTest.class);
@@ -19,7 +13,11 @@ public class DatabaseManagerTest {
   public void testDatabaseManager() throws RecordNotFound {
     LOGGER.info("Starting test");
     DatabaseManager.init();
-    NameRecord record = DatabaseManager.getNameById(1);
-    LOGGER.info("First name: {} Last name: {}", record.first, record.last);
+    NameRecord name = DatabaseManager.getNameById(1);
+    LOGGER.info("First name: {} Last name: {}", name.first, name.last);
+    AddressRecord address = DatabaseManager.getAddressById(1);
+    LOGGER.info("Address street: {} Zip: {}", address.street, address.zip);
+    List<AreaCodeRecord> codes = DatabaseManager.getAreaCodesByState("CA");
+    LOGGER.info("Area code: {} State: {}", codes.get(0).code, codes.get(0).state);
   }
 }

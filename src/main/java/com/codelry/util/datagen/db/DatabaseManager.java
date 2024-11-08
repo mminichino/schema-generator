@@ -5,6 +5,8 @@ import org.apache.logging.log4j.Logger;
 
 import java.net.URL;
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 public class DatabaseManager {
@@ -63,11 +65,33 @@ public class DatabaseManager {
     }
   }
 
-  public static NameRecord getNameById(int id) throws RecordNotFound {
+  public static long getAddressCount() {
+    String sql = "SELECT COUNT(*) FROM addresses";
+    try {
+      ResultSet rs = stmt.executeQuery(sql);
+      rs.next();
+      return rs.getLong(1);
+    } catch (SQLException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  public static long getAreaCodeCount() {
+    String sql = "SELECT COUNT(*) FROM areacodes";
+    try {
+      ResultSet rs = stmt.executeQuery(sql);
+      rs.next();
+      return rs.getLong(1);
+    } catch (SQLException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  public static NameRecord getNameById(long id) throws RecordNotFound {
     try {
       String query = "SELECT * FROM names where id = ?";
       PreparedStatement stmt = conn.prepareStatement(query);
-      stmt.setInt(1, id);
+      stmt.setLong(1, id);
       ResultSet rs = stmt.executeQuery();
       if (rs.next()) {
         return new NameRecord(
@@ -78,6 +102,52 @@ public class DatabaseManager {
       } else {
         throw new RecordNotFound(String.format("Record %d not found", id));
       }
+    } catch (SQLException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  public static AddressRecord getAddressById(long id) throws RecordNotFound {
+    try {
+      String query = "SELECT * FROM addresses where id = ?";
+      PreparedStatement stmt = conn.prepareStatement(query);
+      stmt.setLong(1, id);
+      ResultSet rs = stmt.executeQuery();
+      if (rs.next()) {
+        return new AddressRecord(
+            rs.getString(2),
+            rs.getString(3),
+            rs.getString(4),
+            rs.getString(5),
+            rs.getString(6)
+        );
+      } else {
+        throw new RecordNotFound(String.format("Record %d not found", id));
+      }
+    } catch (SQLException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  public static List<AreaCodeRecord> getAreaCodesByState(String state) throws RecordNotFound {
+    List<AreaCodeRecord> records = new ArrayList<>();
+    try {
+      String query = "SELECT * FROM areacodes where state = ?";
+      PreparedStatement stmt = conn.prepareStatement(query);
+      stmt.setString(1, state);
+      ResultSet rs = stmt.executeQuery();
+      while (rs.next()) {
+        AreaCodeRecord record = new AreaCodeRecord(
+            rs.getString(2),
+            rs.getString(3),
+            rs.getString(4)
+        );
+        records.add(record);
+      }
+      if (records.isEmpty()) {
+        throw new RecordNotFound(String.format("No records found for %s", state));
+      }
+      return records;
     } catch (SQLException e) {
       throw new RuntimeException(e);
     }
