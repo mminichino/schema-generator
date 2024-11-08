@@ -1,4 +1,4 @@
-package com.codelry.util;
+package com.codelry.util.datagen;
 
 import com.codelry.util.datagen.util.ProgressOutput;
 import org.apache.logging.log4j.LogManager;

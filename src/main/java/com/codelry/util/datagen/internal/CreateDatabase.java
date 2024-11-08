@@ -12,7 +12,9 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.sql.*;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class CreateDatabase {
   private static final Logger LOGGER = LogManager.getLogger(CreateDatabase.class);
@@ -32,7 +34,6 @@ public class CreateDatabase {
   private static final String AREA_CODE_TABLE = "CREATE TABLE IF NOT EXISTS areacodes " +
                                                 "(id INTEGER PRIMARY KEY AUTOINCREMENT, " +
                                                 "code TEXT, " +
-                                                "prefix TEXT, " +
                                                 "state TEXT)";
 
   public CreateDatabase() {}
@@ -137,15 +138,19 @@ public class CreateDatabase {
 
   public static void populatePhoneTable(String filename) {
     LOGGER.info("Inserting phone data into the database");
+    Set<String> uniqueCodes = new HashSet<>();
     try {
       try (Reader reader = new FileReader(filename); CSVParser parser = new CSVParser(reader, CSVFormat.DEFAULT)) {
         try (Connection conn = DriverManager.getConnection(url)) {
           for (CSVRecord record : parser) {
-            String sql = "INSERT INTO areacodes(code,prefix,state) VALUES(?,?,?)";
+            if (uniqueCodes.contains(record.get(0))) {
+              continue;
+            }
+            uniqueCodes.add(record.get(0));
+            String sql = "INSERT INTO areacodes(code,state) VALUES(?,?)";
             PreparedStatement stmt = conn.prepareStatement(sql);
             stmt.setString(1, record.get(0));
-            stmt.setString(2, record.get(1));
-            stmt.setString(3, record.get(2));
+            stmt.setString(2, record.get(2));
             stmt.executeUpdate();
           }
         }

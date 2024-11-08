@@ -19,6 +19,14 @@ public class NameRecord {
     return last;
   }
 
+  public String fullName() {
+    return first + " " + last;
+  }
+
+  public String emailAddress() {
+    return first.toLowerCase() + "." + last.toLowerCase() + "@example.com";
+  }
+
   public String getGender() {
     return gender;
   }

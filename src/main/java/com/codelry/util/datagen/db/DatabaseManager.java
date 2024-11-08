@@ -5,15 +5,17 @@ import org.apache.logging.log4j.Logger;
 
 import java.net.URL;
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 public class DatabaseManager {
   private static final Logger LOGGER = LogManager.getLogger(DatabaseManager.class);
   private static DatabaseManager instance;
   private static volatile Connection conn;
   private static volatile Statement stmt;
+  public static long nameCount;
+  public static long addressCount;
+  public static long areaCodeCount;
+  public static Map<String, Long> areaCodeCountByState;
 
   private DatabaseManager() {}
 
@@ -30,6 +32,10 @@ public class DatabaseManager {
       conn = DriverManager.getConnection("jdbc:sqlite::memory:");
       stmt = conn.createStatement();
       cacheDatabase();
+      nameCount = getNameCount();
+      addressCount = getAddressCount();
+      areaCodeCount = getAreaCodeCount();
+      areaCodeCountByState = getAreaCodeCountByState();
     } catch (SQLException e) {
       throw new RuntimeException(e);
     }
@@ -87,6 +93,22 @@ public class DatabaseManager {
     }
   }
 
+  public static Map<String, Long> getAreaCodeCountByState() {
+    Map<String, Long> map = new HashMap<>();
+    String sql = "SELECT state, COUNT(*) FROM areacodes GROUP BY state";
+    try {
+      ResultSet rs = stmt.executeQuery(sql);
+      while (rs.next()) {
+        String state = rs.getString(1);
+        Long count = rs.getLong(2);
+        map.put(state, count);
+      }
+      return map;
+    } catch (SQLException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
   public static NameRecord getNameById(long id) throws RecordNotFound {
     try {
       String query = "SELECT * FROM names where id = ?";
@@ -139,8 +161,7 @@ public class DatabaseManager {
       while (rs.next()) {
         AreaCodeRecord record = new AreaCodeRecord(
             rs.getString(2),
-            rs.getString(3),
-            rs.getString(4)
+            rs.getString(3)
         );
         records.add(record);
       }

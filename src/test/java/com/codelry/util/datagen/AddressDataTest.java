@@ -1,4 +1,4 @@
-package com.codelry.util;
+package com.codelry.util.datagen;
 
 import com.codelry.util.datagen.internal.GenerateIdentityData;
 import com.fasterxml.jackson.databind.JsonNode;

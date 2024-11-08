@@ -1,7 +1,9 @@
 package com.codelry.util.datagen.generator;
 
+import java.util.UUID;
+
 public class DocumentId {
   public static String documentId() {
-    return "ObjectIdText";
+    return UUID.randomUUID().toString();
   }
 }
