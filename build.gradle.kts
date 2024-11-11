@@ -25,7 +25,7 @@ dependencies {
     implementation("com.fasterxml.jackson.core:jackson-databind:2.17.2")
     implementation("org.apache.commons:commons-configuration2:2.11.0")
     implementation("com.couchbase.client:java-client:3.7.2")
-    implementation("com.codelry.util:couchbase-connect-sdk3:1.0.0")
+    implementation("com.codelry.util:couchbase-connect-sdk3:1.0.1")
     implementation("com.hubspot.jinjava:jinjava:2.7.3")
     implementation("dev.langchain4j:langchain4j:0.35.0")
     implementation("dev.langchain4j:langchain4j-open-ai:0.35.0")

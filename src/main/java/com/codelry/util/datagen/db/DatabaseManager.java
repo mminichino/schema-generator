@@ -2,6 +2,8 @@ package com.codelry.util.datagen.db;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.sqlite.SQLiteConfig;
+import org.sqlite.SQLiteOpenMode;
 
 import java.net.URL;
 import java.sql.*;
@@ -16,6 +18,7 @@ public class DatabaseManager {
   public static long addressCount;
   public static long areaCodeCount;
   public static Map<String, Long> areaCodeCountByState;
+  private static final Object COORDINATOR = new Object();
 
   private DatabaseManager() {}
 
@@ -29,13 +32,18 @@ public class DatabaseManager {
 
   public void setup() {
     try {
-      conn = DriverManager.getConnection("jdbc:sqlite::memory:");
+      SQLiteConfig config = new SQLiteConfig();
+      config.setOpenMode(SQLiteOpenMode.FULLMUTEX);
+      config.setJournalMode(SQLiteConfig.JournalMode.WAL);
+      Properties properties = config.toProperties();
+      conn = DriverManager.getConnection("jdbc:sqlite::memory:", properties);
       stmt = conn.createStatement();
       cacheDatabase();
       nameCount = getNameCount();
       addressCount = getAddressCount();
       areaCodeCount = getAreaCodeCount();
       areaCodeCountByState = getAreaCodeCountByState();
+      LOGGER.debug("Database initialized");
     } catch (SQLException e) {
       throw new RuntimeException(e);
     }
@@ -58,6 +66,12 @@ public class DatabaseManager {
 
   public static Statement getStatement() {
     return stmt;
+  }
+
+  public static ResultSet executeQuery(PreparedStatement stmt) throws SQLException {
+    synchronized (COORDINATOR) {
+      return stmt.executeQuery();
+    }
   }
 
   public static long getNameCount() {

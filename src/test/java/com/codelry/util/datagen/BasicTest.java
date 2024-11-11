@@ -7,7 +7,6 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import java.io.IOException;
-import java.util.Set;
 
 public class BasicTest {
   private final ObjectMapper mapper = new ObjectMapper();
@@ -28,15 +27,10 @@ public class BasicTest {
     }
 
     Generator.init();
-    Generator.readTemplate(template);
-    Set<String> bindings = Generator.extractBindings();
-    for (String binding : bindings) {
-      System.out.println(binding);
-    }
+    Generator.loadTemplate(template);
     for(int i = 1; i <= 10; i++) {
       JsonNode document = Generator.render();
       System.out.println(document.toPrettyString());
     }
-
   }
 }

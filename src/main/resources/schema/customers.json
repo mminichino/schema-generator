@@ -1,0 +1,25 @@
+[
+  {
+    "keyspace": "data.data.customers",
+    "documentId": "random_uuid",
+    "schema" : {
+      "id": "{{ INDEX }}",
+      "firstName": "{{ FIRST_NAME }}",
+      "lastName": "{{ LAST_NAME }}",
+      "address": "{{ ADDRESS_LINE_1 }}",
+      "city": "{{ CITY }}",
+      "state": "{{ STATE }}",
+      "zip": "{{ ZIPCODE }}",
+      "phone": "{{ PHONE_NUMBER }}",
+      "email": "{{ EMAIL_ADDRESS }}"
+    },
+    "primary_index": false,
+    "secondary_index": [
+      "id",
+      "firstName",
+      "lastName",
+      "phone",
+      "email"
+    ]
+  }
+]
