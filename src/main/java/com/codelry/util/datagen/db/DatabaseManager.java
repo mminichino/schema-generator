@@ -11,26 +11,15 @@ import java.util.*;
 
 public class DatabaseManager {
   private static final Logger LOGGER = LogManager.getLogger(DatabaseManager.class);
-  private static DatabaseManager instance;
   private static volatile Connection conn;
   private static volatile Statement stmt;
-  public static long nameCount;
-  public static long addressCount;
-  public static long areaCodeCount;
-  public static Map<String, Long> areaCodeCountByState;
   private static final Object COORDINATOR = new Object();
+  public long nameCount;
+  public long addressCount;
+  public long areaCodeCount;
+  public Map<String, Long> areaCodeCountByState;
 
-  private DatabaseManager() {}
-
-  public static DatabaseManager init() {
-    if (instance == null) {
-      instance = new DatabaseManager();
-      instance.setup();
-    }
-    return instance;
-  }
-
-  public void setup() {
+  public DatabaseManager() {
     try {
       SQLiteConfig config = new SQLiteConfig();
       config.setOpenMode(SQLiteOpenMode.FULLMUTEX);
@@ -60,21 +49,21 @@ public class DatabaseManager {
     }
   }
 
-  public static Connection getConnection() {
+  public Connection getConnection() {
     return conn;
   }
 
-  public static Statement getStatement() {
+  public Statement getStatement() {
     return stmt;
   }
 
-  public static ResultSet executeQuery(PreparedStatement stmt) throws SQLException {
+  public ResultSet executeQuery(PreparedStatement stmt) throws SQLException {
     synchronized (COORDINATOR) {
       return stmt.executeQuery();
     }
   }
 
-  public static long getNameCount() {
+  public long getNameCount() {
     String sql = "SELECT COUNT(*) FROM names";
     try {
       ResultSet rs = stmt.executeQuery(sql);
@@ -85,7 +74,7 @@ public class DatabaseManager {
     }
   }
 
-  public static long getAddressCount() {
+  public long getAddressCount() {
     String sql = "SELECT COUNT(*) FROM addresses";
     try {
       ResultSet rs = stmt.executeQuery(sql);
@@ -96,7 +85,7 @@ public class DatabaseManager {
     }
   }
 
-  public static long getAreaCodeCount() {
+  public long getAreaCodeCount() {
     String sql = "SELECT COUNT(*) FROM areacodes";
     try {
       ResultSet rs = stmt.executeQuery(sql);
@@ -107,7 +96,7 @@ public class DatabaseManager {
     }
   }
 
-  public static Map<String, Long> getAreaCodeCountByState() {
+  public Map<String, Long> getAreaCodeCountByState() {
     Map<String, Long> map = new HashMap<>();
     String sql = "SELECT state, COUNT(*) FROM areacodes GROUP BY state";
     try {
@@ -123,7 +112,7 @@ public class DatabaseManager {
     }
   }
 
-  public static NameRecord getNameById(long id) throws RecordNotFound {
+  public NameRecord getNameById(long id) throws RecordNotFound {
     try {
       String query = "SELECT * FROM names where id = ?";
       PreparedStatement stmt = conn.prepareStatement(query);
@@ -143,7 +132,7 @@ public class DatabaseManager {
     }
   }
 
-  public static AddressRecord getAddressById(long id) throws RecordNotFound {
+  public AddressRecord getAddressById(long id) throws RecordNotFound {
     try {
       String query = "SELECT * FROM addresses where id = ?";
       PreparedStatement stmt = conn.prepareStatement(query);
@@ -165,7 +154,7 @@ public class DatabaseManager {
     }
   }
 
-  public static List<AreaCodeRecord> getAreaCodesByState(String state) throws RecordNotFound {
+  public List<AreaCodeRecord> getAreaCodesByState(String state) throws RecordNotFound {
     List<AreaCodeRecord> records = new ArrayList<>();
     try {
       String query = "SELECT * FROM areacodes where state = ?";

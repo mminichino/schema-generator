@@ -13,14 +13,14 @@ public class DatabaseManagerTest {
   @Test
   public void testDatabaseManager() throws RecordNotFound {
     LOGGER.info("Starting test");
-    DatabaseManager.init();
-    NameRecord name = DatabaseManager.getNameById(1);
+    DatabaseManager databaseManager = new DatabaseManager();
+    NameRecord name = databaseManager.getNameById(1);
     LOGGER.info("First name: {} Last name: {}", name.first, name.last);
-    AddressRecord address = DatabaseManager.getAddressById(1);
+    AddressRecord address = databaseManager.getAddressById(1);
     LOGGER.info("Address street: {} Zip: {}", address.street, address.zip);
-    List<AreaCodeRecord> codes = DatabaseManager.getAreaCodesByState("CA");
+    List<AreaCodeRecord> codes = databaseManager.getAreaCodesByState("CA");
     LOGGER.info("Area code: {} State: {}", codes.get(0).code, codes.get(0).state);
-    for (Map.Entry<String, Long> entry : DatabaseManager.areaCodeCountByState.entrySet()) {
+    for (Map.Entry<String, Long> entry : databaseManager.areaCodeCountByState.entrySet()) {
       LOGGER.info("State: {} Count: {}", entry.getKey(), entry.getValue());
     }
   }
