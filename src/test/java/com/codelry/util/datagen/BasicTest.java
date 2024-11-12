@@ -26,10 +26,9 @@ public class BasicTest {
       throw new RuntimeException(e);
     }
 
-    Generator.init();
-    Generator.loadTemplate(template);
+    Generator generator = new Generator(template);
     for(int i = 1; i <= 10; i++) {
-      JsonNode document = Generator.render();
+      JsonNode document = generator.renderJson();
       System.out.println(document.toPrettyString());
     }
   }

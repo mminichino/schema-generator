@@ -20,34 +20,34 @@ import java.util.concurrent.atomic.AtomicLong;
 
 public class Generator {
   private static final Logger LOGGER = LogManager.getLogger(Generator.class);
-  private static volatile Generator instance;
   private static Jinjava jinjava;
-  private static Map<String, Object> context = new HashMap<>();
   private static String template;
+  private static Set<String> bindings;
   private static final ObjectMapper mapper = new ObjectMapper();
   private static final AtomicLong index = new AtomicLong(0);
+  private static final Randomizer randomizer = new Randomizer();
 
-  private Generator() {}
-
-  public static Generator init() {
-    if (instance == null) {
-      synchronized (Generator.class) {
-        if (instance == null) {
-          instance = new Generator();
-          instance.setup();
-        }
-      }
-    }
-    return instance;
-  }
-
-  private void setup() {
+  public Generator(JsonNode templateJson) {
     JinjavaConfig config = new JinjavaConfig();
     jinjava = new Jinjava(config);
-    Randomizer.init();
+
+    try {
+      template = mapper.writeValueAsString(templateJson);
+      bindings = extractBindings(template);
+    } catch (JsonProcessingException e) {
+      throw new RuntimeException(e);
+    }
   }
 
-  public static Set<String> extractBindings(String template) {
+  public Generator(String templateString) {
+    JinjavaConfig config = new JinjavaConfig();
+    jinjava = new Jinjava(config);
+
+    template = templateString;
+    bindings = extractBindings(template);
+  }
+
+  public Set<String> extractBindings(String template) {
     Set<String> bindings = new HashSet<>();
     try {
       JinjavaInterpreter interpreter = jinjava.newInterpreter();
@@ -59,7 +59,7 @@ public class Generator {
     return bindings;
   }
 
-  private static void traverseNodes(Node node, Set<String> bindings) {
+  private void traverseNodes(Node node, Set<String> bindings) {
     if (node instanceof ExpressionNode) {
       ExpressionToken token = (ExpressionToken) node.getMaster();
       bindings.add(token.getExpr());
@@ -69,7 +69,7 @@ public class Generator {
     }
   }
 
-  public static Map<String, Object> setContext(Set<String> bindings) {
+  public Map<String, Object> setContext(Set<String> bindings) {
     Map<String, Object> context = new HashMap<>();
 
     for (String binding : bindings) {
@@ -84,7 +84,7 @@ public class Generator {
         case "LAST_NAME":
         case "FULL_NAME":
         case "EMAIL_ADDRESS":
-          NameRecord name = Randomizer.randomNameRecord();
+          NameRecord name = randomizer.randomNameRecord();
           context.put("FIRST_NAME", name.first);
           context.put("LAST_NAME", name.last);
           context.put("FULL_NAME", name.fullName());
@@ -95,8 +95,8 @@ public class Generator {
         case "STATE":
         case "ZIPCODE":
         case "PHONE_NUMBER":
-          AddressRecord address = Randomizer.randomAddressRecord();
-          String phoneNumber = Randomizer.randomPhoneNumber(address.state);
+          AddressRecord address = randomizer.randomAddressRecord();
+          String phoneNumber = randomizer.randomPhoneNumber(address.state);
           context.put("ADDRESS_LINE_1", address.number + " " + address.street);
           context.put("CITY", address.city);
           context.put("STATE", address.state);
@@ -109,28 +109,22 @@ public class Generator {
     return context;
   }
 
-  public static void loadTemplate(JsonNode templateJson) {
+  public JsonNode renderJson() {
     try {
-      template = mapper.writeValueAsString(templateJson);
-      Set<String> bindings = extractBindings(template);
-      context = setContext(bindings);
-    } catch (JsonProcessingException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-  public static JsonNode render() {
-    String renderedTemplate = jinjava.render(template, context);
-    try {
+      String renderedTemplate = jinjava.render(template, setContext(bindings));
       return mapper.readTree(renderedTemplate);
     } catch (JsonProcessingException e) {
-      throw new RuntimeException(e);
+      throw new RuntimeException("Can not render template as JSON");
+    } catch (Exception e) {
+      throw new RuntimeException("Problem rendering template: " + e.getMessage(), e);
     }
   }
 
-  public static String renderSingleTemplate(String template) {
-    Set<String> bindings = extractBindings(template);
-    Map<String, Object> context = setContext(bindings);
-    return jinjava.render(template, context);
+  public String renderString() {
+    try {
+      return jinjava.render(template, setContext(bindings));
+    } catch (Exception e) {
+      throw new RuntimeException("Problem rendering template: " + e.getMessage(), e);
+    }
   }
 }

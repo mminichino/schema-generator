@@ -13,17 +13,17 @@ public class RandomizerTest {
   @Test
   public void testRandomizer1() {
     LOGGER.info("Starting test");
-    Randomizer.init();
-    String firstName = Randomizer.randomFirstName();
-    String lastName = Randomizer.randomLastName();
-    String fullName = Randomizer.randomFullName();
+    Randomizer randomizer = new Randomizer();
+    String firstName = randomizer.randomFirstName();
+    String lastName = randomizer.randomLastName();
+    String fullName = randomizer.randomFullName();
     LOGGER.info("First name: {}", firstName);
     LOGGER.info("Last name: {}", lastName);
     LOGGER.info("Full name: {}", fullName);
-    NameRecord record = Randomizer.randomNameRecord();
+    NameRecord record = randomizer.randomNameRecord();
     LOGGER.info("Full Name: {} Email: {}", record.fullName(), record.emailAddress());
-    AddressRecord address = Randomizer.randomAddressRecord();
-    String phone = Randomizer.randomPhoneNumber(address.state);
+    AddressRecord address = randomizer.randomAddressRecord();
+    String phone = randomizer.randomPhoneNumber(address.state);
     LOGGER.info("Address: {} {}, {}, {} {}", address.number, address.street, address.city, address.state, address.zip);
     LOGGER.info("Phone number: {}", phone);
   }

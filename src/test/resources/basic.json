@@ -1,5 +1,5 @@
 {
-    "id": "{{ DOCUMENT_ID }}",
+    "id": "{{ RANDOM_UUID }}",
     "index": "{{ INDEX }}",
     "firstName": "{{ FIRST_NAME }}",
     "lastName": "{{ LAST_NAME }}"
