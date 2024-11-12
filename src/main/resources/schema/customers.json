@@ -1,7 +1,7 @@
 [
   {
     "keyspace": "data.data.customers",
-    "documentId": "random_uuid",
+    "documentId": "{{ RANDOM_UUID }}",
     "schema" : {
       "id": "{{ INDEX }}",
       "firstName": "{{ FIRST_NAME }}",

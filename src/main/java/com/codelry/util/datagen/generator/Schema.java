@@ -1,9 +1,14 @@
 package com.codelry.util.datagen.generator;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.List;
 
 public class Schema {
@@ -22,7 +27,20 @@ public class Schema {
     index_end = count;
   }
 
-  private void init(String name) {
+  public void init(String name) {
+    try (InputStream in = getClass().getResourceAsStream(String.format("/schema/%s.json", name))) {
+      ObjectMapper mapper = new ObjectMapper();
+      schema = mapper.readValue(in, new TypeReference<List<JsonNode>>(){});
+    } catch (IOException e) {
+      throw new RuntimeException("Failed to load schema " + name, e);
+    }
+  }
 
+  public List<String> getKeyspaceList() {
+    List<String> keyspaceList = new ArrayList<>();
+    for (JsonNode schemaNode : schema) {
+      keyspaceList.add(schemaNode.get("keyspace").asText());
+    }
+    return keyspaceList;
   }
 }
