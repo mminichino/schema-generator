@@ -75,7 +75,6 @@ public class Couchbase extends DataLoad {
   @Override
   public void generate(Schema schema) {
     for (Keyspace keyspace : schema.getSchemaList()) {
-      Generator generator = new Generator(keyspace.template);
       db.connectKeyspace(keyspace.bucket, keyspace.scope, keyspace.collection);
     }
   }
