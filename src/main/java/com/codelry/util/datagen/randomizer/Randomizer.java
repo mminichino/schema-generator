@@ -2,6 +2,7 @@ package com.codelry.util.datagen.randomizer;
 
 import com.codelry.util.datagen.db.*;
 
+import java.util.List;
 import java.util.Random;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -29,6 +30,10 @@ public class Randomizer {
   public double randomDouble(double minValue, double maxValue, int places) {
     double randomValue = minValue + (maxValue - minValue) * rand.nextDouble();
     return roundDouble(randomValue, places);
+  }
+
+  public String randomListElement(List<String> values) {
+    return values.get(randomNumber(0, values.size() - 1));
   }
 
   public String randomFirstName() {

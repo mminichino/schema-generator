@@ -2,5 +2,19 @@
     "id": "{{ INDEX }}",
     "hash": "{{ RANDOM_UUID }}",
     "firstName": "{{ FIRST_NAME }}",
-    "lastName": "{{ LAST_NAME }}"
+    "lastName": "{{ LAST_NAME }}",
+    "random": "{{ random(['red', 'green', 'blue']) }}",
+    "number": "{{ number(10, 50) }}",
+    "decimal": "{{ decimal(10, 100, 2) }}",
+    "list": [
+        "{{ repeat(4) }}",
+        {
+            "id": "{{ INDEX }}",
+            "item": "{{ FIRST_NAME }}"
+        }
+    ],
+    "unchanged": [
+        "one",
+        "two"
+    ]
 }
