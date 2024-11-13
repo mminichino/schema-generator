@@ -16,6 +16,7 @@ public class BasicTest {
   public void testCouchbaseConnect(String templateFile) {
     ClassLoader loader = Thread.currentThread().getContextClassLoader();
     JsonNode template;
+    String idTemplate = "{{ random_uuid() }}";
 
     System.out.printf("Testing with template file: %s%n", templateFile);
     try {
@@ -26,10 +27,10 @@ public class BasicTest {
       throw new RuntimeException(e);
     }
 
-    Generator generator = new Generator(template);
     for(int i = 1; i <= 10; i++) {
-      JsonNode document = generator.renderJson();
-      System.out.println(document.toPrettyString());
+      Generator generator = new Generator(i, idTemplate, template);
+      System.out.println("Document ID:" + generator.getId());
+      System.out.println(generator.getDocument().toPrettyString());
     }
   }
 }

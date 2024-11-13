@@ -3,7 +3,9 @@ package com.codelry.util.datagen.drivers;
 import com.codelry.util.cbdb3.CouchbaseConfig;
 import com.codelry.util.cbdb3.CouchbaseConnect;
 import com.codelry.util.datagen.DataLoad;
-import com.codelry.util.datagen.Record;
+import com.codelry.util.datagen.generator.Record;
+import com.codelry.util.datagen.generator.Generator;
+import com.codelry.util.datagen.generator.Keyspace;
 import com.codelry.util.datagen.generator.Schema;
 import com.couchbase.client.core.error.CouchbaseException;
 import com.couchbase.client.java.ReactiveCollection;
@@ -71,8 +73,11 @@ public class Couchbase extends DataLoad {
   }
 
   @Override
-  public void generate() {
-
+  public void generate(Schema schema) {
+    for (Keyspace keyspace : schema.getSchemaList()) {
+      Generator generator = new Generator(keyspace.template);
+      db.connectKeyspace(keyspace.bucket, keyspace.scope, keyspace.collection);
+    }
   }
 
   public void cleanup() {}

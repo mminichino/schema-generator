@@ -12,7 +12,7 @@ public abstract class DataLoad {
 
   public abstract void prepare(Schema schema);
 
-  public abstract void generate();
+  public abstract void generate(Schema schema);
 
   public abstract void cleanup();
 }

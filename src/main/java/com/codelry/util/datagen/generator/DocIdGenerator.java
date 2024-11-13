@@ -19,7 +19,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
 
-public class Generator {
+public class DocIdGenerator {
   private static final ObjectMapper mapper = new ObjectMapper();
   private static final Randomizer randomizer = new Randomizer();
   private static JinjavaInterpreter interpreter;
@@ -30,7 +30,7 @@ public class Generator {
   private static JsonNode document;
   private static final Context context = new Context();
 
-  public Generator(long index, String idTemplate, JsonNode docTemplate) {
+  public DocIdGenerator(long index, String idTemplate, JsonNode docTemplate) {
     indexValue = index;
     templateId = idTemplate;
     template = extractDocTemplate(docTemplate);

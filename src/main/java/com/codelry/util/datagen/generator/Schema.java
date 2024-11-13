@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class Schema {
   private static final Logger LOGGER = LogManager.getLogger(Schema.class);
@@ -40,6 +41,15 @@ public class Schema {
     List<String> keyspaceList = new ArrayList<>();
     for (JsonNode schemaNode : schema) {
       keyspaceList.add(schemaNode.get("keyspace").asText());
+    }
+    return keyspaceList;
+  }
+
+  public List<Keyspace> getSchemaList() {
+    List<Keyspace> keyspaceList = new ArrayList<>();
+    for (JsonNode schemaNode : schema) {
+      Keyspace keyspace = new Keyspace(schemaNode.get("keyspace").asText(), schemaNode.get("schema"));
+      keyspaceList.add(keyspace);
     }
     return keyspaceList;
   }

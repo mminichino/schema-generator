@@ -1,6 +1,6 @@
 {
-    "id": "{{ RANDOM_UUID }}",
-    "index": "{{ INDEX }}",
+    "id": "{{ INDEX }}",
+    "hash": "{{ RANDOM_UUID }}",
     "firstName": "{{ FIRST_NAME }}",
     "lastName": "{{ LAST_NAME }}"
 }
