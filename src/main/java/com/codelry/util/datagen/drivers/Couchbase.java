@@ -96,7 +96,7 @@ public class Couchbase extends DataLoad {
   @Override
   public void connect(Keyspace keyspace) {
     try {
-      LOGGER.debug("Connecting to keyspace {}.{}.{}", keyspace.bucket, keyspace.scope, keyspace.collection);
+      LOGGER.debug("Connecting to keyspace {}", keyspace.toString());
       db.connectKeyspace(keyspace.bucket, keyspace.scope, keyspace.collection);
       collection = db.getReactiveCollection();
     } catch (CouchbaseException e) {

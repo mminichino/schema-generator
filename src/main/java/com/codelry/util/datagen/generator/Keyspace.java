@@ -29,6 +29,10 @@ public class Keyspace {
     secondaryIndexFields.addAll(indexFields);
   }
 
+  public String toString() {
+    return bucket + "." + scope + "." + collection;
+  }
+
   public String getBucket() {
     return bucket;
   }

@@ -24,6 +24,7 @@ public abstract class DataLoad {
     setProperties(props);
     schema = new Schema(schemaName, start);
     recordCount = scaleFactor;
+    counter.set(start);
   }
 
   public void setProperties(Properties props) {
@@ -46,6 +47,7 @@ public abstract class DataLoad {
 
   public void generate() {
     for (Keyspace keyspace : schema.getSchemaList()) {
+      LOGGER.info("Generating data for keyspace {}", keyspace.toString());
       connect(keyspace);
       List<Record> documents = new ArrayList<>();
       String idTemplate = keyspace.idTemplate;

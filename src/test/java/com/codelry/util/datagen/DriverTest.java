@@ -11,6 +11,8 @@ import java.util.Properties;
 
 public class DriverTest {
   private static final Logger LOGGER = LogManager.getLogger(DriverTest.class);
+  private static final String GENERATOR_SCHEMA_PROPERTY = "generator.schema";
+  private static final String GENERATOR_DEFAULT_SCHEMA = "customers";
   private static final String propertyFile = "test.properties";
   public static Properties properties;
 
@@ -28,9 +30,19 @@ public class DriverTest {
   }
 
   @Test
-  public void testDriver() {
+  public void testDriver1() {
+    String schema = properties.getProperty(GENERATOR_SCHEMA_PROPERTY, GENERATOR_DEFAULT_SCHEMA);
     Couchbase driver = new Couchbase();
-    driver.init(properties, "customers", 1, 1000);
+    driver.init(properties, schema, 1, 1000);
+    driver.prepare();
+    driver.generate();
+  }
+
+  @Test
+  public void testDriver2() {
+    String schema = properties.getProperty(GENERATOR_SCHEMA_PROPERTY, GENERATOR_DEFAULT_SCHEMA);
+    Couchbase driver = new Couchbase();
+    driver.init(properties, schema, 1001, 1000);
     driver.prepare();
     driver.generate();
   }
