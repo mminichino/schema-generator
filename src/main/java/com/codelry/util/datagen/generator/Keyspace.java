@@ -2,6 +2,7 @@ package com.codelry.util.datagen.generator;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -10,8 +11,11 @@ public class Keyspace {
   public String scope;
   public String collection;
   public JsonNode template;
+  public String idTemplate;
+  public boolean primaryIndex;
+  public List<String> secondaryIndexFields = new ArrayList<>();
 
-  public Keyspace(String keyspace, JsonNode schema) {
+  public Keyspace(String keyspace, JsonNode schema, String id, boolean primary, List<String> indexFields) {
     List<String> keys = Arrays.asList(keyspace.split("\\."));
     if (keys.size() != 3) {
       throw new RuntimeException("Invalid keyspace: " + keyspace);
@@ -20,6 +24,9 @@ public class Keyspace {
     scope = keys.get(1);
     collection = keys.get(2);
     template = schema;
+    idTemplate = id;
+    primaryIndex = primary;
+    secondaryIndexFields.addAll(indexFields);
   }
 
   public String getBucket() {

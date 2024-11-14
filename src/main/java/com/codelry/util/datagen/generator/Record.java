@@ -6,8 +6,8 @@ public class Record {
   public String documentId;
   public JsonNode document;
 
-  public Record(String pattern, JsonNode document) {
-    this.documentId = pattern;
+  public Record(String id, JsonNode document) {
+    this.documentId = id;
     this.document = document;
   }
 
