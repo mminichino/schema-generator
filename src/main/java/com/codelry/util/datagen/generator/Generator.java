@@ -14,6 +14,7 @@ import com.hubspot.jinjava.features.FeatureStrategies;
 import com.hubspot.jinjava.interpret.Context;
 import com.hubspot.jinjava.interpret.JinjavaInterpreter;
 import static com.hubspot.jinjava.lib.expression.DefaultExpressionStrategy.ECHO_UNDEFINED;
+
 import com.hubspot.jinjava.lib.fn.ELFunctionDefinition;
 import com.hubspot.jinjava.objects.collections.PyList;
 import com.hubspot.jinjava.tree.Node;
@@ -21,6 +22,8 @@ import com.hubspot.jinjava.tree.ExpressionNode;
 import com.hubspot.jinjava.tree.parse.ExpressionToken;
 import org.apache.commons.codec.binary.Hex;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
@@ -35,6 +38,7 @@ public class Generator {
   private final long index;
   private final String idTemplate;
   private final JsonNode docTemplate;
+  private String idField = "id";
 
   public Generator(long number, String id, JsonNode doc) {
     index = number;
@@ -173,6 +177,9 @@ public class Generator {
     Context context = new Context();
     JinjavaConfig config = JinjavaConfig.newBuilder().build();
     Jinjava jinjava = new Jinjava(config);
+    context.put("INDEX", indexValue);
+    jinjava.getGlobalContext().registerFilter(new PadFilter());
+    jinjava.getGlobalContext().registerFilter(new DocumentFilter(document));
     try {
       jinjava.getGlobalContext().registerFunction(
           new ELFunctionDefinition(
@@ -181,29 +188,7 @@ public class Generator {
               this.getClass().getDeclaredMethod("randomUuid")
           )
       );
-      jinjava.getGlobalContext().registerFunction(
-          new ELFunctionDefinition(
-              "",
-              "index",
-              this.getClass().getDeclaredMethod("indexNum", int.class)
-          )
-      );
-      jinjava.getGlobalContext().registerFunction(
-          new ELFunctionDefinition(
-              "",
-              "field",
-              this.getClass().getDeclaredMethod("fieldValue", String.class)
-          )
-      );
-      jinjava.getGlobalContext().registerFunction(
-          new ELFunctionDefinition(
-              "",
-              "doc_hash",
-              this.getClass().getDeclaredMethod("docHash")
-          )
-      );
-      interpreter = new JinjavaInterpreter(jinjava, context, config);
-      return interpreter.render(template);
+      return jinjava.render(template, context);
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
@@ -256,13 +241,13 @@ public class Generator {
     }
   }
 
-  public String randomUuid() {
+  public static String randomUuid() {
     return UUID.randomUUID().toString();
   }
 
-  public String indexNum(int pad) {
+  public static String indexNum(int pad) {
     pad = pad <= 0 ? 1 : pad;
-    return String.format("%0" + pad + "d", indexValue);
+    return String.format("%0" + pad + "d", 11);
   }
 
   public String fieldValue(String field) {
@@ -279,24 +264,33 @@ public class Generator {
     }
   }
 
-  public String randomSelection(Object list) {
-    List<String> strings = new ArrayList<>();
-    for (Object item : (PyList) list) {
-      strings.add(item.toString());
-    }
-    return randomizer.randomListElement(strings);
+  public static String randomSelection(Object list) {
+    PyList elements = (PyList) list;
+    Random rand = new Random();
+    int index = rand.nextInt(elements.size());
+    return elements.get(index).toString();
   }
 
-  public Integer randomNumber(int start, int end) {
-    return randomizer.randomNumber(start, end);
+  public static Integer randomNumber(int start, int end) {
+    Random rand = new Random();
+    return rand.nextInt((end - start) + 1) + start;
   }
 
-  public double randomDecimal(int start, int end, int precision) {
-    return randomizer.randomDouble(start, end, precision);
+  public static double randomDecimal(int start, int end, int precision) {
+    Random rand = new Random();
+    BigDecimal bd;
+    double value = start + (end - start) * rand.nextDouble();
+    bd = BigDecimal.valueOf(value);
+    bd = bd.setScale(precision, RoundingMode.HALF_UP);
+    return bd.doubleValue();
   }
 
-  public String arrayGen(int size) {
+  public static String arrayGen(int size) {
     return String.format("####repeat:%d", size);
+  }
+
+  public void setIdField(String field) {
+    idField = field;
   }
 
   public JsonNode getDocument() {

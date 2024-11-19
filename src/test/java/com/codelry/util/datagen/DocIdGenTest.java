@@ -41,7 +41,7 @@ public class DocIdGenTest {
 
   @Test
   public void testIndex() {
-    String idTemplate = "{{ index(5) }}";
+    String idTemplate = "{{ INDEX | padint(5) }}";
     long i = 100;
 
     Generator generator = new Generator(i, idTemplate, template);
@@ -51,7 +51,7 @@ public class DocIdGenTest {
 
   @Test
   public void testField() {
-    String idTemplate = "{{ field('id') }}";
+    String idTemplate = "{{ 'id' | extract }}";
     long i = 100;
 
     Generator generator = new Generator(i, idTemplate, template);
@@ -61,7 +61,7 @@ public class DocIdGenTest {
 
   @Test
   public void testHash() {
-    String idTemplate = "{{ doc_hash() }}";
+    String idTemplate = "{{ '_hash_' | extract }}";
     long i = 100;
 
     Generator generator = new Generator(i, idTemplate, template);
