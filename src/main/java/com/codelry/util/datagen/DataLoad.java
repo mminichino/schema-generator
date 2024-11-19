@@ -24,7 +24,7 @@ public abstract class DataLoad {
   public static Properties properties;
   public static Schema schema;
   private final List<Future<Record>> loadTasks = new ArrayList<>();
-  private final ExecutorService loadExecutor = Executors.newFixedThreadPool(32);
+  private final ExecutorService loadExecutor = Executors.newFixedThreadPool(128);
 
   public void init(Properties props, String schemaName, long start, long scaleFactor) {
     setProperties(props);
@@ -77,9 +77,9 @@ public abstract class DataLoad {
       String idTemplate = keyspace.idTemplate;
       JsonNode template = keyspace.template;
       while (counter.get() <= recordCount) {
-        Generator generator = new Generator(counter.getAndIncrement(), idTemplate, template);
+        Generator generator = new Generator(counter.get(), idTemplate, template);
         loadTaskAdd(generator::generate);
-        if (counter.get() % batchSize == 0) {
+        if (counter.getAndIncrement() % batchSize == 0) {
           insertBatch(loadTaskWait());
         }
       }

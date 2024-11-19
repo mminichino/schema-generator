@@ -3,7 +3,6 @@ package com.codelry.util.datagen.db;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.sqlite.SQLiteConfig;
-import org.sqlite.SQLiteOpenMode;
 
 import java.net.URL;
 import java.sql.*;
@@ -12,12 +11,11 @@ import java.util.*;
 public class DatabaseManager {
   private static final Logger LOGGER = LogManager.getLogger(DatabaseManager.class);
   private static DatabaseManager instance;
-  private static volatile Connection conn;
-  private static volatile Statement stmt;
   public static long nameCount;
   public static long addressCount;
-  public static long areaCodeCount;
-  public static Map<String, Long> areaCodeCountByState;
+  public static List<NameRecord> nameList = new ArrayList<>();
+  public static List<AddressRecord> addressList = new ArrayList<>();
+  public static Map<String, List<String>> areaCodeList = new HashMap<>();
 
   private DatabaseManager() {}
 
@@ -32,144 +30,92 @@ public class DatabaseManager {
   public void init() {
     try {
       SQLiteConfig config = new SQLiteConfig();
-      config.setOpenMode(SQLiteOpenMode.FULLMUTEX);
-      config.setJournalMode(SQLiteConfig.JournalMode.WAL);
       Properties properties = config.toProperties();
-      conn = DriverManager.getConnection("jdbc:sqlite::memory:", properties);
-      stmt = conn.createStatement();
-      cacheDatabase();
+      URL sourceDb = DatabaseManager.class.getClassLoader().getResource("data/source.db");
+      Connection conn = DriverManager.getConnection("jdbc:sqlite:" + Objects.requireNonNull(sourceDb).getPath(), properties);
+      buildNameList(conn);
+      buildAddressList(conn);
+      buildAreaCodeList(conn);
       nameCount = getNameCount();
       addressCount = getAddressCount();
-      areaCodeCount = getAreaCodeCount();
-      areaCodeCountByState = getAreaCodeCountByState();
+      conn.close();
       LOGGER.debug("Database initialized");
     } catch (SQLException e) {
       throw new RuntimeException(e);
     }
   }
 
-  public void cacheDatabase() {
-    try {
-      URL sourceDb = DatabaseManager.class.getClassLoader().getResource("data/source.db");
-      Statement stmt = conn.createStatement();
-      stmt.executeUpdate("restore from " + Objects.requireNonNull(sourceDb).getPath());
-      stmt.close();
-    } catch (SQLException | NullPointerException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
   public long getNameCount() {
-    String sql = "SELECT COUNT(*) FROM names";
-    try {
-      ResultSet rs = stmt.executeQuery(sql);
-      rs.next();
-      return rs.getLong(1);
-    } catch (SQLException e) {
-      throw new RuntimeException(e);
-    }
+    return nameList.size();
   }
 
   public long getAddressCount() {
-    String sql = "SELECT COUNT(*) FROM addresses";
-    try {
-      ResultSet rs = stmt.executeQuery(sql);
-      rs.next();
-      return rs.getLong(1);
-    } catch (SQLException e) {
-      throw new RuntimeException(e);
-    }
+    return addressList.size();
   }
 
-  public long getAreaCodeCount() {
-    String sql = "SELECT COUNT(*) FROM areacodes";
+  public void buildNameList(Connection conn) {
+    String sql = "SELECT first, last, gender FROM names";
     try {
-      ResultSet rs = stmt.executeQuery(sql);
-      rs.next();
-      return rs.getLong(1);
-    } catch (SQLException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-  public Map<String, Long> getAreaCodeCountByState() {
-    Map<String, Long> map = new HashMap<>();
-    String sql = "SELECT state, COUNT(*) FROM areacodes GROUP BY state";
-    try {
+      Statement stmt = conn.createStatement();
       ResultSet rs = stmt.executeQuery(sql);
       while (rs.next()) {
-        String state = rs.getString(1);
-        Long count = rs.getLong(2);
-        map.put(state, count);
-      }
-      return map;
-    } catch (SQLException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-  public NameRecord getNameById(long id) throws RecordNotFound {
-    try {
-      String query = "SELECT * FROM names where id = ?";
-      PreparedStatement stmt = conn.prepareStatement(query);
-      stmt.setLong(1, id);
-      ResultSet rs = stmt.executeQuery();
-      if (rs.next()) {
-        return new NameRecord(
-            rs.getString(2),
-            rs.getString(3),
-            rs.getString(4)
-        );
-      } else {
-        throw new RecordNotFound(String.format("Record %d not found", id));
+        nameList.add(new NameRecord(
+            rs.getString("first"),
+            rs.getString("last"),
+            rs.getString("gender")
+        ));
       }
     } catch (SQLException e) {
       throw new RuntimeException(e);
     }
   }
 
-  public AddressRecord getAddressById(long id) throws RecordNotFound {
+  public void buildAddressList(Connection conn) {
+    String sql = "SELECT number, street, city, state, zip FROM addresses";
     try {
-      String query = "SELECT * FROM addresses where id = ?";
-      PreparedStatement stmt = conn.prepareStatement(query);
-      stmt.setLong(1, id);
-      ResultSet rs = stmt.executeQuery();
-      if (rs.next()) {
-        return new AddressRecord(
-            rs.getString(2),
-            rs.getString(3),
-            rs.getString(4),
-            rs.getString(5),
-            rs.getString(6)
-        );
-      } else {
-        throw new RecordNotFound(String.format("Record %d not found", id));
-      }
-    } catch (SQLException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-  public List<AreaCodeRecord> getAreaCodesByState(String state) throws RecordNotFound {
-    List<AreaCodeRecord> records = new ArrayList<>();
-    try {
-      String query = "SELECT * FROM areacodes where state = ?";
-      PreparedStatement stmt = conn.prepareStatement(query);
-      stmt.setString(1, state);
-      ResultSet rs = stmt.executeQuery();
+      Statement stmt = conn.createStatement();
+      ResultSet rs = stmt.executeQuery(sql);
       while (rs.next()) {
-        AreaCodeRecord record = new AreaCodeRecord(
-            rs.getString(2),
-            rs.getString(3)
-        );
-        records.add(record);
+        addressList.add(new AddressRecord(
+            rs.getString("number"),
+            rs.getString("street"),
+            rs.getString("city"),
+            rs.getString("state"),
+            rs.getString("zip")
+        ));
       }
-      if (records.isEmpty()) {
-        throw new RecordNotFound(String.format("No records found for %s", state));
-      }
-      return records;
     } catch (SQLException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  public void buildAreaCodeList(Connection conn) {
+    String sql = "SELECT state, code FROM areacodes";
+    try {
+      Statement stmt = conn.createStatement();
+      ResultSet rs = stmt.executeQuery(sql);
+      while (rs.next()) {
+        String state = rs.getString("state");
+        String code = rs.getString("code");
+        if (!areaCodeList.containsKey(state)) {
+          areaCodeList.put(state, new ArrayList<>());
+        }
+        areaCodeList.get(state).add(code);
+      }
+    } catch (SQLException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  public NameRecord getNameById(int id) {
+    return nameList.get(id - 1);
+  }
+
+  public AddressRecord getAddressById(int id) {
+    return addressList.get(id - 1);
+  }
+
+  public List<String> getAreaCodesByState(String state) {
+    return areaCodeList.getOrDefault(state, new ArrayList<>());
   }
 }

@@ -33,7 +33,7 @@ public class FileDriverTest {
   public void testDriver1() {
     String schema = properties.getProperty(GENERATOR_SCHEMA_PROPERTY, GENERATOR_DEFAULT_SCHEMA);
     JsonFile driver = new JsonFile();
-    driver.init(properties, schema, 1, 200);
+    driver.init(properties, schema, 1, 30000);
     driver.prepare();
     driver.generate();
     driver.cleanup();
