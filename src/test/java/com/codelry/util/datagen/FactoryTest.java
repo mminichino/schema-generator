@@ -40,5 +40,12 @@ public class FactoryTest {
       }
     }
     factory.stop();
+
+    int total = 990;
+    int batchSize = 100;
+    for (int i = 0; i < total; i += batchSize) {
+      int end = Math.min(i + batchSize, total);
+      System.out.println(end - i);
+    }
   }
 }

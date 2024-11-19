@@ -21,7 +21,6 @@ public class RecordFactory {
   private final String idTemplate;
   private final JsonNode template;
   private int batchSize = 32;
-  private Thread runThread;
 
   public RecordFactory(String id, JsonNode doc) {
     loadExecutor = Executors.newFixedThreadPool(64);
@@ -62,7 +61,7 @@ public class RecordFactory {
   }
 
   public void start() {
-    runThread = new Thread(() -> {
+    Thread runThread = new Thread(() -> {
       while (run.get()) {
         Generator generator = new Generator(counter.get(), idTemplate, template);
         loadTaskAdd(generator::generate);
