@@ -54,7 +54,6 @@ public class JsonFile extends DataLoad {
 
   @Override
   public void insertBatch(List<Record> batch) {
-    LOGGER.debug("Writing {} records", batch.size());
     batch.forEach(record -> {
       try {
         mapper.writeValue(jsonGenerator, record.getDocument());
@@ -79,9 +78,12 @@ public class JsonFile extends DataLoad {
     }
   }
 
+  @Override
   public void cleanup() {
     try {
       jsonGenerator.writeEndArray();
+      jsonGenerator.close();
+      LOGGER.info("Done");
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
