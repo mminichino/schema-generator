@@ -3,7 +3,6 @@ package com.codelry.util.datagen.generator;
 import com.codelry.util.datagen.db.NameRecord;
 import com.codelry.util.datagen.db.AddressRecord;
 import com.codelry.util.datagen.randomizer.Randomizer;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -17,31 +16,39 @@ import com.hubspot.jinjava.interpret.JinjavaInterpreter;
 import static com.hubspot.jinjava.lib.expression.DefaultExpressionStrategy.ECHO_UNDEFINED;
 import com.hubspot.jinjava.lib.fn.ELFunctionDefinition;
 import com.hubspot.jinjava.objects.collections.PyList;
-import com.hubspot.jinjava.objects.collections.SizeLimitingPyList;
 import com.hubspot.jinjava.tree.Node;
 import com.hubspot.jinjava.tree.ExpressionNode;
 import com.hubspot.jinjava.tree.parse.ExpressionToken;
 import org.apache.commons.codec.binary.Hex;
 
-import java.lang.reflect.Array;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
 
 public class Generator {
-  private static final ObjectMapper mapper = new ObjectMapper();
-  private static final Randomizer randomizer = new Randomizer();
-  private static JinjavaInterpreter interpreter;
-  private static long indexValue;
-  private static String id;
-  private static JsonNode document;
+  private final ObjectMapper mapper = new ObjectMapper();
+  private final Randomizer randomizer = new Randomizer();
+  private JinjavaInterpreter interpreter;
+  private long indexValue;
+  private String id;
+  private JsonNode document;
+  private final long index;
+  private final String idTemplate;
+  private final JsonNode docTemplate;
 
-  public Generator(long index, String idTemplate, JsonNode docTemplate) {
+  public Generator(long number, String id, JsonNode doc) {
+    index = number;
+    idTemplate = id;
+    docTemplate = doc;
+  }
+
+  public Record generate() {
     indexValue = index;
     document = preProcess(docTemplate);
     document = arrayProcess(document);
     document = processMain(index, document);
     id = processId(idTemplate);
+    return new Record(getId(), getDocument());
   }
 
   public JsonNode preProcess(JsonNode json) {
@@ -226,22 +233,6 @@ public class Generator {
     }
   }
 
-  public JsonNode stringToJsonNode(String template) {
-    try {
-      return mapper.readValue(template, JsonNode.class);
-    } catch (Exception e) {
-      throw new RuntimeException("Problem reading template: " + e.getMessage(), e);
-    }
-  }
-
-  public String extractDocTemplate(JsonNode templateJson) {
-    try {
-      return mapper.writeValueAsString(templateJson);
-    } catch (JsonProcessingException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
   public Set<String> extractBindings(String template) {
     Set<String> bindings = new HashSet<>();
     try {
@@ -265,20 +256,20 @@ public class Generator {
     }
   }
 
-  public static String randomUuid() {
+  public String randomUuid() {
     return UUID.randomUUID().toString();
   }
 
-  public static String indexNum(int pad) {
+  public String indexNum(int pad) {
     pad = pad <= 0 ? 1 : pad;
     return String.format("%0" + pad + "d", indexValue);
   }
 
-  public static String fieldValue(String field) {
+  public String fieldValue(String field) {
     return document.has(field) ? document.get(field).asText() : "";
   }
 
-  public static String docHash() {
+  public String docHash() {
     try {
       MessageDigest hash = MessageDigest.getInstance("MD5");
       byte[] digest = hash.digest(document.asText().getBytes());
@@ -288,7 +279,7 @@ public class Generator {
     }
   }
 
-  public static String randomSelection(Object list) {
+  public String randomSelection(Object list) {
     List<String> strings = new ArrayList<>();
     for (Object item : (PyList) list) {
       strings.add(item.toString());
@@ -296,15 +287,15 @@ public class Generator {
     return randomizer.randomListElement(strings);
   }
 
-  public static Integer randomNumber(int start, int end) {
+  public Integer randomNumber(int start, int end) {
     return randomizer.randomNumber(start, end);
   }
 
-  public static double randomDecimal(int start, int end, int precision) {
+  public double randomDecimal(int start, int end, int precision) {
     return randomizer.randomDouble(start, end, precision);
   }
 
-  public static String arrayGen(int size) {
+  public String arrayGen(int size) {
     return String.format("####repeat:%d", size);
   }
 

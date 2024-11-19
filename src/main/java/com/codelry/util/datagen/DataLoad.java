@@ -1,10 +1,14 @@
 package com.codelry.util.datagen;
 
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Stream;
 
 import com.codelry.util.datagen.generator.*;
@@ -19,12 +23,32 @@ public abstract class DataLoad {
   private static long recordCount = 0;
   public static Properties properties;
   public static Schema schema;
+  private final List<Future<Record>> loadTasks = new ArrayList<>();
+  private final ExecutorService loadExecutor = Executors.newFixedThreadPool(32);
 
   public void init(Properties props, String schemaName, long start, long scaleFactor) {
     setProperties(props);
     schema = new Schema(schemaName, start);
     recordCount = scaleFactor;
     counter.set(start);
+  }
+
+  public void loadTaskAdd(Callable<Record> task) {
+    loadTasks.add(loadExecutor.submit(task));
+  }
+
+  public List<Record> loadTaskWait() {
+    List<Record> documents = new ArrayList<>();
+    for (Future<Record> future : loadTasks) {
+      try {
+        Record record = future.get();
+        documents.add(record);
+      } catch (InterruptedException | ExecutionException e) {
+        LOGGER.error(e.getMessage(), e);
+      }
+    }
+    loadTasks.clear();
+    return documents;
   }
 
   public void setProperties(Properties props) {
@@ -54,10 +78,14 @@ public abstract class DataLoad {
       JsonNode template = keyspace.template;
       while (counter.get() <= recordCount) {
         Generator generator = new Generator(counter.getAndIncrement(), idTemplate, template);
-        Record record = new Record(generator.getId(), generator.getDocument());
-        documents.add(record);
+        loadTaskAdd(generator::generate);
+        if (counter.get() % batchSize == 0) {
+          insertBatch(loadTaskWait());
+        }
       }
-      dataStream(documents).forEach(this::insertBatch);
+      if (!loadTasks.isEmpty()) {
+        insertBatch(loadTaskWait());
+      }
     }
   }
 

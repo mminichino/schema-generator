@@ -11,15 +11,25 @@ import java.util.*;
 
 public class DatabaseManager {
   private static final Logger LOGGER = LogManager.getLogger(DatabaseManager.class);
+  private static DatabaseManager instance;
   private static volatile Connection conn;
   private static volatile Statement stmt;
-  private static final Object COORDINATOR = new Object();
-  public long nameCount;
-  public long addressCount;
-  public long areaCodeCount;
-  public Map<String, Long> areaCodeCountByState;
+  public static long nameCount;
+  public static long addressCount;
+  public static long areaCodeCount;
+  public static Map<String, Long> areaCodeCountByState;
 
-  public DatabaseManager() {
+  private DatabaseManager() {}
+
+  public static DatabaseManager getInstance() {
+    if (instance == null) {
+      instance = new DatabaseManager();
+      instance.init();
+    }
+    return instance;
+  }
+
+  public void init() {
     try {
       SQLiteConfig config = new SQLiteConfig();
       config.setOpenMode(SQLiteOpenMode.FULLMUTEX);
@@ -46,20 +56,6 @@ public class DatabaseManager {
       stmt.close();
     } catch (SQLException | NullPointerException e) {
       throw new RuntimeException(e);
-    }
-  }
-
-  public Connection getConnection() {
-    return conn;
-  }
-
-  public Statement getStatement() {
-    return stmt;
-  }
-
-  public ResultSet executeQuery(PreparedStatement stmt) throws SQLException {
-    synchronized (COORDINATOR) {
-      return stmt.executeQuery();
     }
   }
 

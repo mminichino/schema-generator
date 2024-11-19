@@ -1,6 +1,7 @@
 package com.codelry.util.datagen;
 
 import com.codelry.util.datagen.generator.Generator;
+import com.codelry.util.datagen.generator.Record;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.logging.log4j.LogManager;
@@ -34,7 +35,8 @@ public class DocIdGenTest {
     long i = 100;
 
     Generator generator = new Generator(i, idTemplate, template);
-    LOGGER.info("UUID: {}", generator.getId());
+    Record record = generator.generate();
+    LOGGER.info("UUID: {}", record.getId());
   }
 
   @Test
@@ -43,7 +45,8 @@ public class DocIdGenTest {
     long i = 100;
 
     Generator generator = new Generator(i, idTemplate, template);
-    LOGGER.info("Index: {}", generator.getId());
+    Record record = generator.generate();
+    LOGGER.info("Index: {}", record.getId());
   }
 
   @Test
@@ -52,7 +55,8 @@ public class DocIdGenTest {
     long i = 100;
 
     Generator generator = new Generator(i, idTemplate, template);
-    LOGGER.info("Field: {}", generator.getId());
+    Record record = generator.generate();
+    LOGGER.info("Field: {}", record.getId());
   }
 
   @Test
@@ -61,6 +65,7 @@ public class DocIdGenTest {
     long i = 100;
 
     Generator generator = new Generator(i, idTemplate, template);
-    LOGGER.info("Hash: {}", generator.getId());
+    Record record = generator.generate();
+    LOGGER.info("Hash: {}", record.getId());
   }
 }

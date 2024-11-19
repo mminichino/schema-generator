@@ -40,3 +40,5 @@ bin/
 
 ### Test Files ###
 test.properties
+test.*.properties
+test.yaml

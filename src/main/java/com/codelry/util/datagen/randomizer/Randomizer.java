@@ -8,12 +8,11 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 
 public class Randomizer {
-  private static Randomizer instance;
-  private static final Random rand = new Random();
+  private final Random rand = new Random();
   private static DatabaseManager databaseManager;
 
   public Randomizer() {
-    databaseManager = new DatabaseManager();
+    databaseManager = DatabaseManager.getInstance();
   }
 
   public int randomNumber(int minValue, int maxValue) {
@@ -37,7 +36,7 @@ public class Randomizer {
   }
 
   public String randomFirstName() {
-    int index = randomNumber(1, (int) databaseManager.nameCount);
+    int index = randomNumber(1, (int) DatabaseManager.nameCount);
     try {
       NameRecord name = databaseManager.getNameById(index);
       return name.first;
@@ -47,7 +46,7 @@ public class Randomizer {
   }
 
   public String randomLastName() {
-    int index = randomNumber(1, (int) databaseManager.nameCount);
+    int index = randomNumber(1, (int) DatabaseManager.nameCount);
     try {
       NameRecord name = databaseManager.getNameById(index);
       return name.last;
@@ -57,7 +56,7 @@ public class Randomizer {
   }
 
   public String randomFullName() {
-    int index = randomNumber(1, (int) databaseManager.nameCount);
+    int index = randomNumber(1, (int) DatabaseManager.nameCount);
     try {
       NameRecord name = databaseManager.getNameById(index);
       return name.fullName();
@@ -67,8 +66,8 @@ public class Randomizer {
   }
 
   public NameRecord randomNameRecord() {
-    int firstIndex = randomNumber(1, (int) databaseManager.nameCount);
-    int lastIndex = randomNumber(1, (int) databaseManager.nameCount);
+    int firstIndex = randomNumber(1, (int) DatabaseManager.nameCount);
+    int lastIndex = randomNumber(1, (int) DatabaseManager.nameCount);
     try {
       NameRecord firstName = databaseManager.getNameById(firstIndex);
       NameRecord lastName = databaseManager.getNameById(lastIndex);
@@ -83,8 +82,8 @@ public class Randomizer {
   }
 
   public AddressRecord randomAddressRecord() {
-    int streetIndex = randomNumber(1, (int) databaseManager.addressCount);
-    int cityIndex = randomNumber(1, (int) databaseManager.addressCount);
+    int streetIndex = randomNumber(1, (int) DatabaseManager.addressCount);
+    int cityIndex = randomNumber(1, (int) DatabaseManager.addressCount);
     int number = randomNumber(100, 99999);
     try {
       AddressRecord street = databaseManager.getAddressById(streetIndex);
@@ -102,7 +101,7 @@ public class Randomizer {
   }
 
   public String randomPhoneNumber(String state) {
-    int phoneIndex = randomNumber(1, Math.toIntExact(databaseManager.areaCodeCountByState.get(state)));
+    int phoneIndex = randomNumber(1, Math.toIntExact(DatabaseManager.areaCodeCountByState.get(state)));
     int number = randomNumber(1, 9999);
     try {
       AreaCodeRecord phone = databaseManager.getAreaCodesByState(state).get(phoneIndex - 1);
