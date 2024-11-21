@@ -1,8 +1,8 @@
 package com.codelry.util.datagen.cli;
 
-public class Capella {
+public class CapellaConfig {
   private String project;
   private String database;
   private String token;
-  private String email;
+  private String userEmail;
 }

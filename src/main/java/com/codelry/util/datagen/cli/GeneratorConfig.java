@@ -1,5 +1,5 @@
 package com.codelry.util.datagen.cli;
 
-public class Schema {
+public class GeneratorConfig {
   private String schemaName;
 }
