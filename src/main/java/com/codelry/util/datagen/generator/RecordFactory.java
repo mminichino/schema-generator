@@ -53,7 +53,7 @@ public class RecordFactory {
       } catch (ExecutionException e) {
         errorQueue.add(e);
       } catch (InterruptedException e) {
-        LOGGER.debug("Record wait interrupted");
+        LOGGER.debug("Record queue wait interrupted");
       }
     }
     loadTasks.clear();
@@ -69,6 +69,7 @@ public class RecordFactory {
         }
       }
     });
+    LOGGER.debug("Starting record factory");
     runThread.start();
   }
 
