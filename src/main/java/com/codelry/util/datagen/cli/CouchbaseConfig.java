@@ -15,9 +15,9 @@ public class CouchbaseConfig {
 
   public Properties toProperties() {
     Properties properties = new Properties();
-    properties.setProperty(COUCHBASE_HOSTNAME, hostname);
-    properties.setProperty(COUCHBASE_USERNAME, username);
-    properties.setProperty(COUCHBASE_PASSWORD, password);
+    if (hostname != null) properties.setProperty(COUCHBASE_HOSTNAME, hostname);
+    if (username != null) properties.setProperty(COUCHBASE_USERNAME, username);
+    if (password != null) properties.setProperty(COUCHBASE_PASSWORD, password);
     return properties;
   }
 

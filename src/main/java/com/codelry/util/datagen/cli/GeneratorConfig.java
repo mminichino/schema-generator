@@ -10,14 +10,14 @@ public class GeneratorConfig {
   public static final String GENERATOR_SCHEMA_SIZE = "generator.size";
   public static final String GENERATOR_DRIVER = "generator.driver";
   private String schemaName;
-  private int schemaSize = 10;
-  private String driver = "couchbase";
+  private String schemaSize;
+  private String driver;
 
   public Properties toProperties() {
     Properties properties = new Properties();
-    properties.setProperty(GENERATOR_SCHEMA_NAME, schemaName);
-    properties.setProperty(GENERATOR_SCHEMA_SIZE, String.valueOf(schemaSize));
-    properties.setProperty(GENERATOR_DRIVER, driver);
+    if (schemaName != null) properties.setProperty(GENERATOR_SCHEMA_NAME, schemaName);
+    if (schemaSize != null) properties.setProperty(GENERATOR_SCHEMA_SIZE, schemaSize);
+    if (driver != null) properties.setProperty(GENERATOR_DRIVER, driver);
     return properties;}
 
   public String getSchemaName() {
@@ -28,11 +28,11 @@ public class GeneratorConfig {
     this.schemaName = schemaName;
   }
 
-  public int getSchemaSize() {
+  public String getSchemaSize() {
     return schemaSize;
   }
 
-  public void setSchemaSize(int schemaSize) {
+  public void setSchemaSize(String schemaSize) {
     this.schemaSize = schemaSize;
   }
 

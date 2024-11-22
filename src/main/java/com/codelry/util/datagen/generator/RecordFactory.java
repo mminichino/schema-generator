@@ -7,7 +7,6 @@ import org.apache.logging.log4j.Logger;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.*;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class RecordFactory {
@@ -17,10 +16,10 @@ public class RecordFactory {
   private final List<Future<Record>> loadTasks = new ArrayList<>();
   private ExecutorService loadExecutor;
   private static final AtomicLong counter = new AtomicLong(1);
-  private AtomicBoolean run = new AtomicBoolean(true);
   private final String idTemplate;
   private final JsonNode template;
   private int batchSize = 32;
+  private Thread runThread;
 
   public RecordFactory(String id, JsonNode doc) {
     loadExecutor = Executors.newFixedThreadPool(64);
@@ -54,15 +53,15 @@ public class RecordFactory {
       } catch (ExecutionException e) {
         errorQueue.add(e);
       } catch (InterruptedException e) {
-        LOGGER.error(e.getMessage(), e);
+        LOGGER.debug("Record wait interrupted");
       }
     }
     loadTasks.clear();
   }
 
   public void start() {
-    Thread runThread = new Thread(() -> {
-      while (run.get()) {
+    runThread = new Thread(() -> {
+      while (!Thread.currentThread().isInterrupted()) {
         Generator generator = new Generator(counter.get(), idTemplate, template);
         loadTaskAdd(generator::generate);
         if (counter.getAndIncrement() % batchSize == 0) {
@@ -74,7 +73,8 @@ public class RecordFactory {
   }
 
   public void stop() {
-    run.set(false);
+    LOGGER.debug("Stopping record factory");
+    runThread.interrupt();
   }
 
   public List<Record> collect(int quantity) {

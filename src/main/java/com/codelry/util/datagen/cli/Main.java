@@ -30,22 +30,26 @@ public class Main {
     long schemaSize = Long.parseLong(properties.getProperty(GENERATOR_SCHEMA_SIZE, "1"));
 
     if (driverName.equalsIgnoreCase("couchbase")) {
+      LOGGER.info("Using Couchbase driver");
       driver = new Couchbase();
     } else {
+      LOGGER.info("Using JsonFile driver");
       driver = new JsonFile();
     }
 
+    LOGGER.info("Generating records for schema {} and size {}", schema, schemaSize);
     driver.init(properties, schema, 1, schemaSize);
     driver.prepare();
     driver.generate();
     driver.cleanup();
+
+    System.exit(0);
   }
 
   public static Properties argsToProperties(String[] args) {
     Properties properties = new Properties();
     Options options = new Options();
     CommandLine cmd = null;
-    String configFile = null;
 
     Option hostnameOpt = Option.builder("h").longOpt("hostname").hasArg().desc("Hostname")
         .required(false).build();
@@ -88,39 +92,36 @@ public class Main {
 
     try {
       cmd = parser.parse(options, args);
-      configFile = cmd.hasOption("config") ? cmd.getOptionValue("config") : null;
     } catch (ParseException e) {
       System.out.println(e.getMessage());
       formatter.printHelp("generator", options);
       System.exit(1);
     }
 
-    if (configFile != null) {
-      LOGGER.debug("Reading config file: {}", cmd.getOptionValue("config"));
-      return yamlToProperties(cmd.getOptionValue("config"));
-    } else {
-      CapellaConfig capellaConfig = new CapellaConfig();
-      capellaConfig.setProject(cmd.getOptionValue("project"));
-      capellaConfig.setDatabase(cmd.getOptionValue("database"));
-      capellaConfig.setToken(cmd.getOptionValue("token"));
-      capellaConfig.setUserEmail(cmd.getOptionValue("email"));
-      capellaConfig.setUserId(cmd.getOptionValue("user"));
-      capellaConfig.setProjectId(cmd.getOptionValue("project-id"));
-      capellaConfig.setDatabaseId(cmd.getOptionValue("database-id"));
-      properties.putAll(capellaConfig.toProperties());
+    CapellaConfig capellaConfig = new CapellaConfig();
+    capellaConfig.setProject(cmd.getOptionValue("project"));
+    capellaConfig.setDatabase(cmd.getOptionValue("database"));
+    capellaConfig.setToken(cmd.getOptionValue("token"));
+    capellaConfig.setUserEmail(cmd.getOptionValue("email"));
+    capellaConfig.setUserId(cmd.getOptionValue("user"));
+    capellaConfig.setProjectId(cmd.getOptionValue("project-id"));
+    capellaConfig.setDatabaseId(cmd.getOptionValue("database-id"));
+    properties.putAll(capellaConfig.toProperties());
 
-      CouchbaseConfig couchbaseConfig = new CouchbaseConfig();
-      couchbaseConfig.setHostname(cmd.getOptionValue("hostname"));
-      couchbaseConfig.setUsername(cmd.getOptionValue("username"));
-      couchbaseConfig.setPassword(cmd.getOptionValue("password"));
-      properties.putAll(couchbaseConfig.toProperties());
+    CouchbaseConfig couchbaseConfig = new CouchbaseConfig();
+    couchbaseConfig.setHostname(cmd.getOptionValue("hostname"));
+    couchbaseConfig.setUsername(cmd.getOptionValue("username"));
+    couchbaseConfig.setPassword(cmd.getOptionValue("password"));
+    properties.putAll(couchbaseConfig.toProperties());
 
-      GeneratorConfig generatorConfig = new GeneratorConfig();
-      generatorConfig.setSchemaName(cmd.getOptionValue("schema"));
-      generatorConfig.setSchemaSize(Integer.parseInt(cmd.getOptionValue("number")));
-      generatorConfig.setDriver(cmd.getOptionValue("driver", "couchbase"));
-      properties.putAll(generatorConfig.toProperties());
-    }
+    GeneratorConfig generatorConfig = new GeneratorConfig();
+    generatorConfig.setSchemaName(cmd.getOptionValue("schema"));
+    generatorConfig.setSchemaSize(cmd.getOptionValue("number"));
+    generatorConfig.setDriver(cmd.getOptionValue("driver", "couchbase"));
+    properties.putAll(generatorConfig.toProperties());
+
+    Properties configProperties = yamlToProperties(cmd.getOptionValue("config"));
+    properties.putAll(configProperties);
 
     return properties;
   }
@@ -129,20 +130,23 @@ public class Main {
   public static Properties yamlToProperties(String yaml) {
     Properties properties = new Properties();
 
-    ObjectMapper yamlMapper = new ObjectMapper(new YAMLFactory());
-    try {
-      Object config = yamlMapper.readValue(new File(yaml), Object.class);
-      if (config instanceof Map) {
-        Map<String, Object> data = (Map<String, Object>) config;
-        CapellaConfig capellaConfig = yamlMapper.convertValue(data.get("capella"), CapellaConfig.class);
-        CouchbaseConfig couchbaseConfig = yamlMapper.convertValue(data.get("couchbase"), CouchbaseConfig.class);
-        GeneratorConfig generatorConfig = yamlMapper.convertValue(data.get("generator"), GeneratorConfig.class);
-        properties.putAll(capellaConfig.toProperties());
-        properties.putAll(couchbaseConfig.toProperties());
-        properties.putAll(generatorConfig.toProperties());
+    if (yaml != null) {
+      LOGGER.debug("Reading config file: {}", yaml);
+      ObjectMapper yamlMapper = new ObjectMapper(new YAMLFactory());
+      try {
+        Object config = yamlMapper.readValue(new File(yaml), Object.class);
+        if (config instanceof Map) {
+          Map<String, Object> data = (Map<String, Object>) config;
+          CapellaConfig capellaConfig = yamlMapper.convertValue(data.get("capella"), CapellaConfig.class);
+          CouchbaseConfig couchbaseConfig = yamlMapper.convertValue(data.get("couchbase"), CouchbaseConfig.class);
+          GeneratorConfig generatorConfig = yamlMapper.convertValue(data.get("generator"), GeneratorConfig.class);
+          properties.putAll(capellaConfig.toProperties());
+          properties.putAll(couchbaseConfig.toProperties());
+          properties.putAll(generatorConfig.toProperties());
+        }
+      } catch (IOException e) {
+        throw new RuntimeException("Can not read config file " + yaml, e);
       }
-    } catch (IOException e) {
-      throw new RuntimeException("Can not read config file " + yaml, e);
     }
 
     return properties;

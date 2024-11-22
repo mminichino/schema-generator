@@ -23,13 +23,13 @@ public class CapellaConfig {
 
   public Properties toProperties() {
     Properties properties = new Properties();
-    properties.setProperty(CAPELLA_PROJECT_NAME, project);
-    properties.setProperty(CAPELLA_PROJECT_ID, projectId);
-    properties.setProperty(CAPELLA_DATABASE_NAME, database);
-    properties.setProperty(CAPELLA_DATABASE_ID, databaseId);
-    properties.setProperty(CAPELLA_TOKEN, token);
-    properties.setProperty(CAPELLA_USER_EMAIL, userEmail);
-    properties.setProperty(CAPELLA_USER_ID, userId);
+    if (project != null) properties.setProperty(CAPELLA_PROJECT_NAME, project);
+    if (projectId != null) properties.setProperty(CAPELLA_PROJECT_ID, projectId);
+    if (database != null) properties.setProperty(CAPELLA_DATABASE_NAME, database);
+    if (databaseId != null) properties.setProperty(CAPELLA_DATABASE_ID, databaseId);
+    if (token != null) properties.setProperty(CAPELLA_TOKEN, token);
+    if (userEmail != null) properties.setProperty(CAPELLA_USER_EMAIL, userEmail);
+    if (userId != null) properties.setProperty(CAPELLA_USER_ID, userId);
     return properties;
   }
 
