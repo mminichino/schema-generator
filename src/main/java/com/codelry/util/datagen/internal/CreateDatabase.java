@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
+import org.apache.commons.text.WordUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.commons.cli.*;
@@ -35,6 +36,16 @@ public class CreateDatabase {
                                                 "(id INTEGER PRIMARY KEY AUTOINCREMENT, " +
                                                 "code TEXT, " +
                                                 "state TEXT)";
+  private static final String ZIP_CODE_TABLE = "CREATE TABLE IF NOT EXISTS zipcodes " +
+                                               "(id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                                               "city TEXT, " +
+                                               "state TEXT, " +
+                                               "zip TEXT, " +
+                                               "plusfour TEXT)";
+  private static final String STATE_TABLE = "CREATE TABLE IF NOT EXISTS states " +
+                                            "(id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                                            "state TEXT, " +
+                                            "weight REAL)";
 
   public CreateDatabase() {}
 
@@ -45,14 +56,20 @@ public class CreateDatabase {
     Option nameOpt = new Option("n", "names", false, "Names");
     Option addressOpt = new Option("a", "address", false, "Addresses");
     Option phoneOpt = new Option("p", "phone", true, "Phones");
+    Option zipOpt = new Option("z", "zip", true, "Zip Codes");
+    Option stateOpt = new Option("s", "state", true, "State Data");
 
     nameOpt.setRequired(false);
     addressOpt.setRequired(false);
     phoneOpt.setRequired(false);
+    zipOpt.setRequired(false);
+    stateOpt.setRequired(false);
 
     options.addOption(nameOpt);
     options.addOption(addressOpt);
     options.addOption(phoneOpt);
+    options.addOption(zipOpt);
+    options.addOption(stateOpt);
 
     CommandLineParser parser = new DefaultParser();
     HelpFormatter formatter = new HelpFormatter();
@@ -71,6 +88,8 @@ public class CreateDatabase {
       stmt.execute(NAMES_TABLE);
       stmt.execute(ADDRESS_TABLE);
       stmt.execute(AREA_CODE_TABLE);
+      stmt.execute(ZIP_CODE_TABLE);
+      stmt.execute(STATE_TABLE);
     } catch (SQLException e) {
       throw new RuntimeException(e);
     }
@@ -81,6 +100,10 @@ public class CreateDatabase {
       populateAddressTable(10_000);
     } else if (cmd.hasOption("phone")) {
       populatePhoneTable(cmd.getOptionValue("phone"));
+    } else if (cmd.hasOption("zip")) {
+      populateZipTable(cmd.getOptionValue("zip"));
+    } else if (cmd.hasOption("state")) {
+      populateStateTable(cmd.getOptionValue("state"));
     }
   }
 
@@ -151,6 +174,46 @@ public class CreateDatabase {
             PreparedStatement stmt = conn.prepareStatement(sql);
             stmt.setString(1, record.get(0));
             stmt.setString(2, record.get(2));
+            stmt.executeUpdate();
+          }
+        }
+      }
+    } catch (IOException | SQLException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  public static void populateZipTable(String filename) {
+    LOGGER.info("Inserting zip code data into the database");
+    try {
+      try (Reader reader = new FileReader(filename); CSVParser parser = new CSVParser(reader, CSVFormat.DEFAULT)) {
+        try (Connection conn = DriverManager.getConnection(url)) {
+          for (CSVRecord record : parser) {
+            String sql = "INSERT INTO zipcodes(city,state,zip,plusfour) VALUES(?,?,?,?)";
+            PreparedStatement stmt = conn.prepareStatement(sql);
+            stmt.setString(1, WordUtils.capitalizeFully(record.get(7).toLowerCase()));
+            stmt.setString(2, record.get(8));
+            stmt.setString(3, record.get(9));
+            stmt.setString(4, record.get(10));
+            stmt.executeUpdate();
+          }
+        }
+      }
+    } catch (IOException | SQLException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  public static void populateStateTable(String filename) {
+    LOGGER.info("Inserting state data into the database");
+    try {
+      try (Reader reader = new FileReader(filename); CSVParser parser = new CSVParser(reader, CSVFormat.DEFAULT)) {
+        try (Connection conn = DriverManager.getConnection(url)) {
+          for (CSVRecord record : parser) {
+            String sql = "INSERT INTO states(state,weight) VALUES(?,?)";
+            PreparedStatement stmt = conn.prepareStatement(sql);
+            stmt.setString(1, String.valueOf(record.get(0)));
+            stmt.setDouble(2, Double.parseDouble(record.get(1)));
             stmt.executeUpdate();
           }
         }

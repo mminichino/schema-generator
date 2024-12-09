@@ -33,6 +33,7 @@ dependencies {
     implementation("commons-cli:commons-cli:1.9.0")
     implementation("org.xerial:sqlite-jdbc:3.47.0.0")
     implementation("org.apache.commons:commons-csv:1.12.0")
+    implementation("org.apache.commons:commons-lang3:3.17.0")
 }
 
 java {
