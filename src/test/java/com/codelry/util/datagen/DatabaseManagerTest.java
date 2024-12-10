@@ -23,5 +23,8 @@ public class DatabaseManagerTest {
     for (Map.Entry<String, List<String>> entry : DatabaseManager.areaCodeList.entrySet()) {
       LOGGER.info("State: {} Codes: {}", entry.getKey(), String.join(",", entry.getValue()));
     }
+    for (Map.Entry<String, Double> entry : DatabaseManager.stateMap.entrySet()) {
+      LOGGER.info("State: {} Weight: {}", entry.getKey(), entry.getValue());
+    }
   }
 }

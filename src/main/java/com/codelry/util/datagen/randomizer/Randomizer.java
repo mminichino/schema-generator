@@ -65,18 +65,29 @@ public class Randomizer {
     );
   }
 
+  public String randomState() {
+    double weight = randomDouble(0, 1, 4);
+    return databaseManager.getState(weight);
+  }
+
+  public StateRecord randomStateRecord() {
+    String state = randomState();
+    List<StateRecord> records = databaseManager.getStateRecordsByState(state);
+    int index = randomNumber(0, records.size() - 1);
+    return records.get(index);
+  }
+
   public AddressRecord randomAddressRecord() {
     int streetIndex = randomNumber(1, (int) DatabaseManager.addressCount);
-    int cityIndex = randomNumber(1, (int) DatabaseManager.addressCount);
+    StateRecord stateRecord = randomStateRecord();
+    String street = databaseManager.getStreetNameById(streetIndex);
     int number = randomNumber(100, 99999);
-    AddressRecord street = databaseManager.getAddressById(streetIndex);
-    AddressRecord city = databaseManager.getAddressById(cityIndex);
     return new AddressRecord(
         String.valueOf(number),
-        street.street,
-        city.city,
-        city.state,
-        city.zip
+        street,
+        stateRecord.city,
+        stateRecord.state,
+        stateRecord.zip
     );
   }
 

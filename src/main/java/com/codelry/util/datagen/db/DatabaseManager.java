@@ -6,6 +6,7 @@ import org.sqlite.SQLiteConfig;
 
 import java.net.URL;
 import java.sql.*;
+import java.text.DecimalFormat;
 import java.util.*;
 
 public class DatabaseManager {
@@ -16,6 +17,8 @@ public class DatabaseManager {
   public static List<NameRecord> nameList = new ArrayList<>();
   public static List<AddressRecord> addressList = new ArrayList<>();
   public static Map<String, List<String>> areaCodeList = new HashMap<>();
+  public static Map<String, List<StateRecord>> stateList = new HashMap<>();
+  public static LinkedHashMap<String, Double> stateMap = new LinkedHashMap<>();
 
   private DatabaseManager() {}
 
@@ -36,6 +39,8 @@ public class DatabaseManager {
       buildNameList(conn);
       buildAddressList(conn);
       buildAreaCodeList(conn);
+      buildStateList(conn);
+      buildStateMap(conn);
       nameCount = getNameCount();
       addressCount = getAddressCount();
       conn.close();
@@ -107,12 +112,89 @@ public class DatabaseManager {
     }
   }
 
+  public void buildStateList(Connection conn) {
+    String getStates = "SELECT DISTINCT state FROM zipcodes";
+    String getStateRecords = "SELECT * FROM zipcodes WHERE state = ?";
+    try {
+      Statement stmt = conn.createStatement();
+      ResultSet rs = stmt.executeQuery(getStates);
+      while (rs.next()) {
+        String state = rs.getString("state");
+        PreparedStatement pstmt = conn.prepareStatement(getStateRecords);
+        pstmt.setString(1, state);
+        ResultSet stateRs = pstmt.executeQuery();
+        List<StateRecord> results = new ArrayList<>();
+        while (stateRs.next()) {
+          results.add(new StateRecord(
+              stateRs.getString("city"),
+              stateRs.getString("state"),
+              stateRs.getString("zip"),
+              stateRs.getString("plusfour")
+          ));
+        }
+        stateList.put(state, results);
+      }
+    } catch (SQLException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  public static <K, V extends Comparable<? super V>> LinkedHashMap<K, V> sortByValue(Map<K, V> map) {
+    List<Map.Entry<K, V>> list = new ArrayList<>(map.entrySet());
+    list.sort(Map.Entry.comparingByValue());
+
+    LinkedHashMap<K, V> result = new LinkedHashMap<>();
+    for (Map.Entry<K, V> entry : list) {
+      result.put(entry.getKey(), entry.getValue());
+    }
+    return result;
+  }
+
+  public void buildStateMap(Connection conn) {
+    String sql = "SELECT state, weight FROM states";
+    Map<String, Double> states = new HashMap<>();
+    double totalWeight = 0.0;
+    DecimalFormat df = new DecimalFormat("#.####");
+    try {
+      Statement stmt = conn.createStatement();
+      ResultSet rs = stmt.executeQuery(sql);
+      while (rs.next()) {
+        String state = rs.getString("state");
+        double weight = rs.getDouble("weight");
+        states.put(state, weight);
+      }
+      stateMap = sortByValue(states);
+      for (Map.Entry<String, Double> entry : stateMap.entrySet()) {
+        totalWeight += entry.getValue();
+        stateMap.replace(entry.getKey(), Double.valueOf(df.format(totalWeight)));
+      }
+    } catch (SQLException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  public String getState(double weight) {
+    return stateMap.entrySet().stream()
+        .filter(entry -> entry.getValue() >= weight)
+        .findFirst()
+        .map(Map.Entry::getKey)
+        .orElseThrow(() -> new RuntimeException("No state found for weight " + weight));
+  }
+
   public NameRecord getNameById(int id) {
     return nameList.get(id - 1);
   }
 
   public AddressRecord getAddressById(int id) {
     return addressList.get(id - 1);
+  }
+
+  public String getStreetNameById(int id) {
+    return addressList.get(id - 1).street;
+  }
+
+  public List<StateRecord> getStateRecordsByState(String state) {
+    return stateList.getOrDefault(state, new ArrayList<>());
   }
 
   public List<String> getAreaCodesByState(String state) {
