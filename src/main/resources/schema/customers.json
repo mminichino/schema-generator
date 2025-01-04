@@ -11,7 +11,9 @@
       "state": "{{ STATE }}",
       "zip": "{{ ZIPCODE }}",
       "phone": "{{ PHONE_NUMBER }}",
-      "email": "{{ EMAIL_ADDRESS }}"
+      "email": "{{ EMAIL_ADDRESS }}",
+      "isActive": "{{ BOOLEAN }}",
+      "balance": "{{ decimal(10, 100, 2) }}"
     },
     "primary_index": false,
     "secondary_index": [

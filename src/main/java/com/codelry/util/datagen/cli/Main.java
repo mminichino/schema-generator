@@ -137,10 +137,12 @@ public class Main {
         Object config = yamlMapper.readValue(new File(yaml), Object.class);
         if (config instanceof Map) {
           Map<String, Object> data = (Map<String, Object>) config;
-          CapellaConfig capellaConfig = yamlMapper.convertValue(data.get("capella"), CapellaConfig.class);
+          if (data.containsKey("capella")) {
+            CapellaConfig capellaConfig = yamlMapper.convertValue(data.get("capella"), CapellaConfig.class);
+            properties.putAll(capellaConfig.toProperties());
+          }
           CouchbaseConfig couchbaseConfig = yamlMapper.convertValue(data.get("couchbase"), CouchbaseConfig.class);
           GeneratorConfig generatorConfig = yamlMapper.convertValue(data.get("generator"), GeneratorConfig.class);
-          properties.putAll(capellaConfig.toProperties());
           properties.putAll(couchbaseConfig.toProperties());
           properties.putAll(generatorConfig.toProperties());
         }

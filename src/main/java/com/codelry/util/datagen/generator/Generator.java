@@ -3,8 +3,10 @@ package com.codelry.util.datagen.generator;
 import com.codelry.util.datagen.db.NameRecord;
 import com.codelry.util.datagen.db.AddressRecord;
 import com.codelry.util.datagen.randomizer.Randomizer;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.hubspot.jinjava.Jinjava;
@@ -48,9 +50,9 @@ public class Generator {
 
   public Record generate() {
     indexValue = index;
-    document = preProcess(docTemplate);
-    document = arrayProcess(document);
-    document = processMain(index, document);
+//    document = preProcess(docTemplate);
+//    document = arrayProcess(document);
+    document = processMain(docTemplate);
     id = processId(idTemplate);
     return new Record(getId(), getDocument());
   }
@@ -90,85 +92,15 @@ public class Generator {
     return result;
   }
 
-  public JsonNode processMain(long index, JsonNode json) {
-    Context context = new Context();
-    JinjavaConfig config = JinjavaConfig.newBuilder().build();
-    Jinjava jinjava = new Jinjava(config);
+  public JsonNode processMain(JsonNode json) {
     try {
+      ObjectMapper mapper = new ObjectMapper();
+      SimpleModule module = new SimpleModule();
+      module.addSerializer(JsonNode.class, new GeneratorSerializer());
+      mapper.registerModule(module);
       String template = mapper.writeValueAsString(json);
-      jinjava.getGlobalContext().registerFunction(
-          new ELFunctionDefinition(
-              "",
-              "random_uuid",
-              this.getClass().getDeclaredMethod("randomUuid")
-          )
-      );
-      jinjava.getGlobalContext().registerFunction(
-          new ELFunctionDefinition(
-              "",
-              "index",
-              this.getClass().getDeclaredMethod("indexNum", int.class)
-          )
-      );
-      jinjava.getGlobalContext().registerFunction(
-          new ELFunctionDefinition(
-              "",
-              "number",
-              this.getClass().getDeclaredMethod("randomNumber", int.class, int.class)
-          )
-      );
-      jinjava.getGlobalContext().registerFunction(
-          new ELFunctionDefinition(
-              "",
-              "decimal",
-              this.getClass().getDeclaredMethod("randomDecimal", int.class, int.class, int.class)
-          )
-      );
-      jinjava.getGlobalContext().registerFunction(
-          new ELFunctionDefinition(
-              "",
-              "random",
-              this.getClass().getDeclaredMethod("randomSelection", Object.class)
-          )
-      );
-      Set<String> bindings = extractBindings(template);
-
-      for (String binding : bindings) {
-        switch (binding) {
-          case "RANDOM_UUID":
-            context.put("RANDOM_UUID", randomUuid());
-            break;
-          case "INDEX":
-            context.put("INDEX", index);
-            break;
-          case "FIRST_NAME":
-          case "LAST_NAME":
-          case "FULL_NAME":
-          case "EMAIL_ADDRESS":
-            NameRecord name = randomizer.randomNameRecord();
-            context.put("FIRST_NAME", name.first);
-            context.put("LAST_NAME", name.last);
-            context.put("FULL_NAME", name.fullName());
-            context.put("EMAIL_ADDRESS", name.emailAddress());
-            break;
-          case "ADDRESS_LINE_1":
-          case "CITY":
-          case "STATE":
-          case "ZIPCODE":
-          case "PHONE_NUMBER":
-            AddressRecord address = randomizer.randomAddressRecord();
-            String phoneNumber = randomizer.randomPhoneNumber(address.state);
-            context.put("ADDRESS_LINE_1", address.number + " " + address.street);
-            context.put("CITY", address.city);
-            context.put("STATE", address.state);
-            context.put("ZIPCODE", address.zip);
-            context.put("PHONE_NUMBER", phoneNumber);
-            break;
-        }
-      }
-      interpreter = new JinjavaInterpreter(jinjava, context, config);
-      return mapper.readTree(interpreter.render(template));
-    } catch (Exception e) {
+      return mapper.readTree(template);
+    } catch (JsonProcessingException e) {
       throw new RuntimeException(e);
     }
   }
@@ -207,7 +139,7 @@ public class Generator {
         JsonNode template = node.get(1).deepCopy();
         ArrayNode array = mapper.createArrayNode();
         for (int i = 1; i <= count; i++) {
-          array.add(processMain(i, template));
+          array.add(processMain(template));
         }
         return array;
       } else {

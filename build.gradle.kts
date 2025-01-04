@@ -50,6 +50,7 @@ tasks.compileJava {
 
 tasks.test {
     useJUnitPlatform()
+    maxHeapSize = "2g"
 }
 
 tasks.withType<Test> {

@@ -97,4 +97,8 @@ public class Randomizer {
     int codeIndex = randomNumber(1, areaCodes.size());
     return areaCodes.get(codeIndex - 1) + "-555-" + String.format("%04d", number);
   }
+
+  public boolean randomBoolean() {
+    return rand.nextBoolean();
+  }
 }

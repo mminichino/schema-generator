@@ -9,6 +9,7 @@ public class GeneratorConfig {
   public static final String GENERATOR_SCHEMA_NAME = "generator.schema";
   public static final String GENERATOR_SCHEMA_SIZE = "generator.size";
   public static final String GENERATOR_DRIVER = "generator.driver";
+  public static final String GENERATOR_OUTPUT_DIRECTORY = "generator.outputDirectory";
   private String schemaName;
   private String schemaSize;
   private String driver;
